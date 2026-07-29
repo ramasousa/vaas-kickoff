@@ -226,12 +226,12 @@ a{text-decoration:none;color:inherit;}
         <span class="dc-tag" style="background:rgba(204,9,47,.12);color:var(--brad);">Demo interativa · App + AWS</span>
       </div>
       <div class="dc-title">Emulador do App Bradesco<br>+ Arquitetura AWS</div>
-      <div class="dc-desc">Protótipo navegável com o app Bradesco à esquerda e a <b>arquitetura AWS iluminando em tempo real</b> conforme a conversa avança. Cada endpoint do <b>lcbr-srv-debito-veiculo</b> acende no momento exato em que é chamado.</div>
+      <div class="dc-desc">Protótipo navegável com o app Bradesco à esquerda e a <b>arquitetura AWS iluminando em tempo real</b> conforme a conversa avança. Jornada <b>inteligente</b>: descoberta da garagem, cadastro conversacional e recomendação financeira à vista vs. CDB.</div>
       <div class="dc-bullets">
-        <div class="dc-bullet">3 modos: MVP (IPVA + Licenciamento + Taxas), Produção (todos os débitos) e Backlog</div>
-        <div class="dc-bullet">14 passos do fluxo: abertura do chat → consulta → seleção → saga de pagamento → comprovante</div>
-        <div class="dc-bullet">Endpoints reais: /veiculo/lista-positiva, /debito/consulta, /debito/pagamento com nomeServico</div>
-        <div class="dc-bullet">Step Functions, DynamoDB (idempotência), Axway e Bridge/Bedrock visíveis no diagrama</div>
+        <div class="dc-bullet">Descoberta proativa da garagem pelo clienteId + cadastro conversacional de veículo faltante</div>
+        <div class="dc-bullet">Inteligência financeira: parcelar sem juros e investir no CDB vs. desconto à vista (ganho projetado)</div>
+        <div class="dc-bullet">19 passos: garagem → cadastro → consulta → análise CDB → saga (CDB + pagamentos) → comprovante</div>
+        <div class="dc-bullet">Endpoints reais: /veiculo/lista-positiva, /veiculo/vincula, /debito/consulta, /debito/pagamento + cross-service /investimentos/cdb</div>
       </div>
       <div class="dc-cta">
         <span class="dc-cta-text">vaas-tributos-emulator.html</span>
