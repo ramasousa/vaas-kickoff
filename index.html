@@ -131,8 +131,7 @@ a{text-decoration:none;color:inherit;}
 .section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
 .section-label::after{content:'';flex:1;height:1px;background:var(--b1);}
 
-.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:52px;}
-@media(max-width:1020px){.cards{grid-template-columns:1fr 1fr;}}
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:52px;}
 @media(max-width:640px){.cards{grid-template-columns:1fr;}}
 
 .doc-card{background:var(--s1);border:1.5px solid var(--b1);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px;transition:all .2s;cursor:pointer;position:relative;overflow:hidden;}
@@ -201,7 +200,7 @@ a{text-decoration:none;color:inherit;}
   <div class="stat"><div class="stat-n" style="color:var(--ok)">3</div><div class="stat-l">Modos de demonstração<br>MVP · Produção · Backlog</div></div>
   <div class="stat"><div class="stat-n" style="color:#9b87f5">3</div><div class="stat-l">AZs · sa-east-1<br>500 TPS no pico IPVA</div></div>
   <div class="stat"><div class="stat-n" style="color:var(--warn)">34%</div><div class="stat-l">Completude atual<br>rumo à visão completa</div></div>
-  <div class="stat"><div class="stat-n" style="color:#ff9900">3</div><div class="stat-l">Materiais nesta sessão<br>Demo · Gaps · Arquitetura</div></div>
+  <div class="stat"><div class="stat-n" style="color:#9b87f5">4</div><div class="stat-l">Materiais nesta sessão<br>Demo · Gaps · Arch · OODA</div></div>
 </div>
 
 <div class="content">
@@ -212,7 +211,7 @@ a{text-decoration:none;color:inherit;}
       <div class="cs-title">Contexto desta apresentação</div>
       <div class="cs-text">
         O VaaS nasceu como uma tese de Full Commerce veicular. Nesta versão, focamos no <strong>ganho imediato de maior impacto</strong> — pagamento de tributos de forma conversacional dentro do próprio app Bradesco, sem redirecionar o cliente para outros canais.<br><br>
-        Os materiais abaixo cobrem a demonstração interativa, o mapeamento completo de gaps para produção plena e a <strong>arquitetura AWS de referência</strong> — Multi-AZ, alta volumetria, Direct Connect e todos os aspectos de rede para o cenário bancário.
+        Os materiais cobrem a demo interativa, gaps para produção plena, arquitetura AWS de referência e uma <strong>análise estratégica OODA</strong> com riscos reais, guardrails com thresholds e R$4.515/mês de economia de custo mapeada.
       </div>
     </div>
   </div>
@@ -278,6 +277,25 @@ a{text-decoration:none;color:inherit;}
       </div>
     </a>
 
+    <a class="doc-card" href="vaas-ooda.html">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">
+        <div class="dc-num" style="background:#9b87f5;color:#fff;">04</div>
+        <span class="dc-tag" style="background:rgba(155,135,245,.12);color:#9b87f5;">OODA · Riscos · Guardrails · Cost</span>
+      </div>
+      <div class="dc-title">Profundidade estratégica<br>OODA · O que não pode falhar</div>
+      <div class="dc-desc">Análise completa de <b>oportunidades, riscos, falhas e mitigações</b> específicas do VaaS — com thresholds reais de guardrails (tokens, RAG, financeiro) e R$4.515/mês de economia de custo mapeada.</div>
+      <div class="dc-bullets">
+        <div class="dc-bullet">OODA loop: Observe (market signals) → Orient (enquadramento) → Decide (trade-offs) → Act (sequência)</div>
+        <div class="dc-bullet">10 riscos com severidade, probabilidade e mitigação exata (alucinação de valor, saga parcial, DX down…)</div>
+        <div class="dc-bullet">Guardrails com thresholds: token budget por turn, RAG similarity ≥0.72, caps financeiros, PII masking</div>
+        <div class="dc-bullet">8 alavancas de cost optimization: Redis reserved, prompt compression, RAG cache, Fargate Spot</div>
+      </div>
+      <div class="dc-cta">
+        <span class="dc-cta-text">vaas-ooda.html</span>
+        <span class="dc-cta-arrow">Ver análise →</span>
+      </div>
+    </a>
+
   </div>
 
   <div class="context-strip" style="border-color:rgba(45,212,168,.2);background:rgba(45,212,168,.04);">
@@ -285,9 +303,10 @@ a{text-decoration:none;color:inherit;}
     <div class="cs-body">
       <div class="cs-title">Como usar na reunião</div>
       <div class="cs-text">
-        <strong>Demo (material 01)</strong> — comece pelo botão <strong>▶ Play</strong> para rodar o fluxo automaticamente, ou use <strong>Próximo ▶</strong> para avançar passo a passo. Alterne entre MVP e Produção para mostrar a diferença de escopo.<br><br>
-        <strong>Gap Analysis (material 02)</strong> — use a seção <strong>Roadmap</strong> para posicionar o que está pronto vs. o que vem nas próximas fases. A seção <strong>Cobertura UFs</strong> é o argumento mais forte para justificar a expansão multi-estado.<br><br>
-        <strong>Arquitetura AWS (material 03)</strong> — comece pelo <strong>Diagrama</strong> (visão física da VPC com subnets e AZs), depois vá para <strong>Compute &amp; Scaling</strong> para mostrar as 4 políticas de Auto Scaling. A aba <strong>Custo</strong> tem os números de R$10.672/mês baseline vs. R$15.590/mês no pico de março.
+        <strong>Demo (01)</strong> — ▶ Play para rodar automaticamente. Alterne MVP / Produção para mostrar diferença de escopo.<br><br>
+        <strong>Gap Analysis (02)</strong> — seção <strong>Roadmap</strong> para posicionar fases. <strong>Cobertura UFs</strong> é o argumento mais forte para multi-estado.<br><br>
+        <strong>Arquitetura AWS (03)</strong> — Diagrama (VPC física) → Compute &amp; Scaling (4 políticas Auto Scaling) → Custo (R$10.672 baseline).<br><br>
+        <strong>OODA (04)</strong> — comece pelo strip <strong>O · O · D · A</strong> para orientar a audiência. Guardrails tem os thresholds exatos para perguntas técnicas. Cost Optimization para mostrar que o produto paga a si mesmo.
       </div>
     </div>
   </div>
