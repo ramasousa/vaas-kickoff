@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaaS · Pagamento de Tributos · lcbr-srv-debito-veiculo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#06080d; --s1:#0d1017; --s2:#131922; --s3:#1a2332;
+  --b1:rgba(255,255,255,.08); --b2:rgba(255,255,255,.04);
+  --brad:#CC092F; --ok:#2dd4a8; --warn:#f59e0b;
+  --blue:#4ea8de; --violet:#9b87f5; --orange:#ff7a45; --aws:#ff9900;
+  --muted:#6b7994; --muted2:#2a3444; --text:#e4e9f4;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── TOPBAR ── */
+.topbar{flex-shrink:0;height:50px;background:var(--s1);border-bottom:1px solid var(--b1);display:flex;align-items:center;padding:0 16px;gap:10px;}
+.tb-title{font-family:'Syne',sans-serif;font-size:12.5px;font-weight:800;}
+.tb-title em{color:var(--brad);font-style:normal;}
+.svc-badge{font-family:'DM Mono',monospace;font-size:9.5px;background:var(--brad-g, rgba(204,9,47,.12));color:var(--brad);border:1px solid rgba(204,9,47,.25);padding:3px 9px;border-radius:12px;}
+.tb-mode{display:flex;gap:3px;background:var(--s2);border-radius:7px;padding:3px;}
+.mode-btn{background:none;border:none;color:var(--muted);font-family:'DM Sans';font-size:11px;font-weight:700;padding:4px 10px;border-radius:5px;cursor:pointer;white-space:nowrap;}
+.mode-btn.active{background:var(--brad);color:#fff;}
+.sep{flex:1;}
+.step-info{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+.ctrl{background:var(--s2);border:1px solid var(--b1);color:var(--text);border-radius:6px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;font-family:'DM Sans';}
+.ctrl:hover{background:var(--s3);}
+.ctrl.play{background:var(--brad);border-color:var(--brad);}
+
+.prog{height:2px;background:var(--b1);flex-shrink:0;}
+.prog-fill{height:100%;background:var(--brad);transition:width .35s;}
+
+/* ── STAGE ── */
+.stage{flex:1;display:flex;overflow:hidden;}
+
+/* ── PHONE ── */
+.phone-panel{width:300px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px;border-right:1px solid var(--b1);}
+.ph-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:center;}
+.phone{width:268px;height:556px;background:#111;border-radius:42px;border:8px solid #252525;box-shadow:0 0 0 1px #1a1a1a,0 20px 60px rgba(0,0,0,.65),inset 0 0 0 1px #333;display:flex;flex-direction:column;overflow:hidden;}
+.ph-notch{height:30px;background:#111;display:flex;align-items:flex-end;justify-content:center;padding-bottom:3px;flex-shrink:0;}
+.ph-pill{width:90px;height:22px;background:#000;border-radius:0 0 16px 16px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.ph-pill .cam{width:8px;height:8px;border-radius:50%;background:#0d0d0d;border:1.5px solid #2a2a2a;}
+.ph-pill .spk{width:28px;height:4px;border-radius:2px;background:#0d0d0d;}
+.ph-body{flex:1;position:relative;overflow:hidden;}
+.ph-screen{position:absolute;inset:0;transition:transform .35s cubic-bezier(.4,0,.2,1),opacity .25s;}
+.ph-screen.off{transform:translateX(-105%);opacity:0;pointer-events:none;}
+
+/* HOME */
+.home{background:linear-gradient(155deg,#0a1628 0%,#060e1e 100%);height:100%;display:flex;flex-direction:column;}
+.home-st{display:flex;justify-content:space-between;padding:7px 13px 0;font-size:9.5px;color:rgba(255,255,255,.45);font-family:'DM Mono',monospace;}
+.home-hd{background:var(--brad);padding:13px 15px 18px;}
+.home-logo{font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:#fff;}
+.home-gr{font-size:10px;color:rgba(255,255,255,.7);}
+.home-bc{margin:0 11px;background:rgba(255,255,255,.94);border-radius:11px;padding:12px;margin-top:-8px;}
+.hbc-l{font-size:9.5px;color:#888;font-weight:600;}
+.hbc-v{font-size:18px;font-weight:800;color:#1a1a1a;font-family:'Syne',sans-serif;margin:2px 0;}
+.hbc-s{font-size:9.5px;color:#888;}
+.home-sh{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;padding:12px 11px 6px;}
+.sh-i{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.sh-ico{width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.sh-l{font-size:8.5px;color:rgba(255,255,255,.6);text-align:center;}
+.home-st2{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.8px;padding:2px 13px 5px;}
+.home-list{display:flex;flex-direction:column;gap:6px;padding:0 11px;}
+.hl-card{background:rgba(255,255,255,.06);border-radius:9px;padding:10px 12px;display:flex;align-items:center;gap:9px;border:1px solid rgba(255,255,255,.06);}
+.hl-card.vaas{background:linear-gradient(135deg,rgba(204,9,47,.88),rgba(140,4,25,.95));border-color:rgba(255,80,80,.12);cursor:pointer;}
+.hl-card.vaas:hover{filter:brightness(1.08);}
+.hl-ico{font-size:16px;flex-shrink:0;}
+.hl-nm{font-size:10.5px;font-weight:700;color:#fff;}
+.hl-sb{font-size:9px;color:rgba(255,255,255,.5);}
+.hl-vaas .hl-sb{color:rgba(255,255,255,.7);}
+.hl-arr{color:rgba(255,255,255,.35);margin-left:auto;font-size:13px;}
+
+/* CHAT */
+.chat{background:#f0f2f5;height:100%;display:flex;flex-direction:column;}
+.ch-hd{background:var(--brad);padding:7px 13px 9px;display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.ch-back{background:none;border:none;color:#fff;font-size:15px;cursor:pointer;padding:0;}
+.ch-ava{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0;font-family:'Syne',sans-serif;}
+.ch-info{flex:1;}
+.ch-nm{font-size:11.5px;font-weight:700;color:#fff;}
+.ch-st{font-size:9px;color:rgba(255,255,255,.7);}
+.msgs{flex:1;overflow-y:auto;padding:9px 9px 5px;display:flex;flex-direction:column;gap:7px;}
+.msgs::-webkit-scrollbar{width:2px;}
+.msgs::-webkit-scrollbar-thumb{background:rgba(0,0,0,.1);}
+
+/* BUBBLES */
+.mb{display:flex;gap:5px;max-width:100%;}
+.mb.user{flex-direction:row-reverse;}
+.mb-av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:auto;}
+.mb-bub{max-width:84%;font-size:11px;line-height:1.55;border-radius:12px;padding:7px 10px;animation:bIn .2s ease;}
+@keyframes bIn{from{opacity:0;transform:scale(.95) translateY(3px);}to{opacity:1;transform:none;}}
+.mb.agent .mb-av{background:var(--brad);color:#fff;}
+.mb.agent .mb-bub{background:#fff;color:#1a1a1a;border-radius:3px 12px 12px 12px;box-shadow:0 1px 2px rgba(0,0,0,.1);}
+.mb.user .mb-av{background:#ddd;color:#555;}
+.mb.user .mb-bub{background:var(--brad);color:#fff;border-radius:12px 3px 12px 12px;}
+.td{display:flex;gap:4px;padding:9px 10px;background:#fff;border-radius:3px 12px 12px 12px;width:fit-content;box-shadow:0 1px 2px rgba(0,0,0,.08);}
+.td span{width:6px;height:6px;border-radius:50%;background:#ccc;animation:td .8s infinite;}
+.td span:nth-child(2){animation-delay:.15s;}
+.td span:nth-child(3){animation-delay:.3s;}
+@keyframes td{0%,60%,100%{transform:translateY(0);}30%{transform:translateY(-5px);}}
+
+/* CARDS */
+.cc{background:#fff;border-radius:9px;overflow:hidden;margin-top:3px;box-shadow:0 2px 6px rgba(0,0,0,.09);}
+.cc-hd{padding:6px 10px;font-weight:700;font-size:10.5px;display:flex;align-items:center;gap:5px;color:#fff;}
+.cc-bd{padding:8px 10px;}
+.cc-r{display:flex;justify-content:space-between;padding:3.5px 0;border-bottom:1px solid #f2f2f2;font-size:10px;color:#555;}
+.cc-r:last-child{border:none;}
+.cc-r .v{font-weight:700;color:#1a1a1a;font-size:10.5px;}
+.cc-r .vg{color:#0d7a5f;}
+.cc-r .vm{color:#aaa;}
+.cc-ft{background:#f8f8f8;padding:6px 10px;display:flex;justify-content:space-between;font-size:10.5px;}
+.cc-ft .v{font-weight:800;color:var(--brad);}
+
+/* DEBT SELECT */
+.debt-sel{background:#fff;border-radius:9px;overflow:hidden;margin-top:3px;box-shadow:0 2px 6px rgba(0,0,0,.09);}
+.ds-hd{background:var(--brad);padding:6px 10px;font-size:10.5px;font-weight:700;color:#fff;}
+.ds-item{display:flex;align-items:center;gap:7px;padding:6px 10px;border-bottom:1px solid #f2f2f2;cursor:pointer;}
+.ds-item:last-child{border:none;}
+.ds-chk{width:14px;height:14px;border-radius:4px;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;font-size:8px;flex-shrink:0;transition:.15s;}
+.ds-chk.on{background:var(--brad);border-color:var(--brad);color:#fff;}
+.ds-name{flex:1;font-size:10px;color:#333;}
+.ds-svc{font-size:8.5px;color:#999;font-family:'DM Mono',monospace;}
+.ds-val{font-weight:700;font-size:10px;color:#1a1a1a;flex-shrink:0;}
+.ds-ft{background:#f8f8f8;padding:6px 10px;display:flex;justify-content:space-between;align-items:center;font-size:10px;}
+.ds-ft .tot{font-weight:800;color:var(--brad);}
+.ds-note{font-size:8.5px;color:#888;}
+
+/* SAGA */
+.saga-item{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:10px;color:#555;}
+.ss-ic{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:7.5px;flex-shrink:0;}
+.ss-done{background:#e8f8f5;color:#0d7a5f;}
+.ss-run{background:rgba(204,9,47,.1);color:var(--brad);}
+.ss-wait{background:#f0f0f0;color:#bbb;}
+.proto{font-family:'DM Mono',monospace;font-size:8px;color:#999;margin-top:1px;}
+
+/* QR */
+.qr-area{padding:6px 9px;border-top:1px solid #ddd;background:#fff;display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;}
+.qr-btn{background:#fff;border:1.5px solid var(--brad);color:var(--brad);border-radius:14px;padding:4px 10px;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans';white-space:nowrap;}
+.qr-btn:hover{background:var(--brad);color:#fff;}
+.qr-btn.sel{background:var(--brad);color:#fff;}
+
+/* ── AWS PANEL ── */
+.aws-panel{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:14px 14px 0;}
+.aws-title{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.aws-title span{flex:1;height:1px;background:var(--b1);}
+.arch{flex:1;display:flex;flex-direction:column;gap:0;overflow:hidden;}
+
+/* NODES */
+.nr{display:flex;gap:8px;justify-content:center;align-items:stretch;padding:4px 0;flex-shrink:0;}
+.arr{color:var(--muted2);font-size:10.5px;text-align:center;padding:1px 0;font-family:'DM Mono',monospace;flex-shrink:0;}
+.nd{border:1.5px solid;border-radius:9px;padding:8px 11px;display:flex;align-items:flex-start;gap:7px;transition:all .3s;flex-shrink:0;}
+.nd.on{box-shadow:0 0 0 2px currentColor, 0 0 18px rgba(255,255,255,.07);}
+.nd-ic{font-size:16px;flex-shrink:0;margin-top:1px;}
+.nd-nm{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;}
+.nd-sb{font-size:8.5px;font-family:'DM Mono',monospace;margin-top:1px;}
+.nd-st{font-size:8px;font-family:'DM Mono',monospace;padding:1.5px 6px;border-radius:7px;margin-top:3px;width:fit-content;display:none;}
+.nd.on .nd-st{display:block;}
+
+.n-app{border-color:rgba(204,9,47,.3);background:rgba(204,9,47,.06);}
+.n-app .nd-nm,.n-app .nd-st{color:var(--brad);}
+.n-app .nd-sb{color:rgba(204,9,47,.5);}
+.n-app.on{border-color:var(--brad);}
+.n-app .nd-st{background:rgba(204,9,47,.12);}
+
+.n-br{border-color:rgba(155,135,245,.3);background:rgba(155,135,245,.06);}
+.n-br .nd-nm,.n-br .nd-st{color:var(--violet);}
+.n-br .nd-sb{color:rgba(155,135,245,.5);}
+.n-br.on{border-color:var(--violet);}
+.n-br .nd-st{background:rgba(155,135,245,.12);}
+
+.n-mcp{border-color:rgba(255,122,69,.3);background:rgba(255,122,69,.06);}
+.n-mcp .nd-nm,.n-mcp .nd-st{color:var(--orange);}
+.n-mcp .nd-sb{color:rgba(255,122,69,.5);}
+.n-mcp.on{border-color:var(--orange);}
+.n-mcp .nd-st{background:rgba(255,122,69,.12);}
+
+.n-sfn{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);}
+.n-sfn .nd-nm,.n-sfn .nd-st{color:var(--warn);}
+.n-sfn .nd-sb{color:rgba(245,158,11,.5);}
+.n-sfn.on{border-color:var(--warn);}
+.n-sfn .nd-st{background:rgba(245,158,11,.12);}
+
+.n-dyn{border-color:rgba(78,168,222,.3);background:rgba(78,168,222,.05);}
+.n-dyn .nd-nm,.n-dyn .nd-st{color:var(--blue);}
+.n-dyn .nd-sb{color:rgba(78,168,222,.5);}
+.n-dyn.on{border-color:var(--blue);}
+.n-dyn .nd-st{background:rgba(78,168,222,.12);}
+
+.n-ax{border-color:rgba(255,153,0,.3);background:rgba(255,153,0,.06);}
+.n-ax .nd-nm,.n-ax .nd-st{color:var(--aws);}
+.n-ax .nd-sb{color:rgba(255,153,0,.5);}
+.n-ax.on{border-color:var(--aws);}
+.n-ax .nd-st{background:rgba(255,153,0,.12);}
+
+.n-svc{border-color:rgba(45,212,168,.3);background:rgba(45,212,168,.05);}
+.n-svc .nd-nm,.n-svc .nd-st{color:var(--ok);}
+.n-svc .nd-sb{color:rgba(45,212,168,.5);}
+.n-svc.on{border-color:var(--ok);}
+.n-svc .nd-st{background:rgba(45,212,168,.12);}
+
+/* MICROSERVICE ENDPOINTS */
+.svc-box{border:1.5px solid rgba(45,212,168,.3);background:rgba(45,212,168,.05);border-radius:9px;padding:10px 12px;margin:0;transition:all .3s;flex:1;}
+.svc-box.on{border-color:var(--ok);box-shadow:0 0 0 2px var(--ok), 0 0 18px rgba(45,212,168,.1);}
+.svc-name{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--ok);margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+.svc-name span{font-size:8px;background:rgba(45,212,168,.1);padding:2px 7px;border-radius:8px;}
+.ep-list{display:flex;flex-direction:column;gap:3px;}
+.ep-item{display:flex;align-items:center;gap:6px;padding:4px 7px;border-radius:6px;background:rgba(0,0,0,.2);transition:all .25s;}
+.ep-item.on{background:rgba(45,212,168,.1);border:1px solid rgba(45,212,168,.25);}
+.ep-method{font-family:'DM Mono',monospace;font-size:8px;font-weight:700;padding:1px 5px;border-radius:4px;flex-shrink:0;}
+.ep-method.get{background:rgba(78,168,222,.15);color:var(--blue);}
+.ep-method.post{background:rgba(255,122,69,.15);color:var(--orange);}
+.ep-path{font-family:'DM Mono',monospace;font-size:8.5px;color:rgba(45,212,168,.7);flex:1;}
+.ep-svc{font-family:'DM Mono',monospace;font-size:7.5px;color:var(--muted);}
+.ep-item.on .ep-path{color:var(--ok);}
+.ep-item.on .ep-svc{color:rgba(45,212,168,.8);}
+
+/* STATUS LOG */
+.log{flex-shrink:0;height:50px;background:var(--s1);border-top:1px solid var(--b1);padding:6px 13px;display:flex;flex-direction:column;justify-content:center;}
+.log-step{font-family:'DM Mono',monospace;font-size:9.5px;color:var(--muted);}
+.log-msg{font-size:11.5px;color:var(--text);}
+.log-msg b{color:var(--ok);}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="tb-title">VaaS <em>·</em> Pagamento de Tributos</div>
+  <div class="svc-badge">lcbr-srv-debito-veiculo</div>
+  <div class="tb-mode">
+    <button class="mode-btn active" onclick="setMode('mvp',this)">MVP</button>
+    <button class="mode-btn" onclick="setMode('prod',this)">Produção</button>
+    <button class="mode-btn" onclick="setMode('back',this)">Backlog</button>
+  </div>
+  <div class="sep"></div>
+  <span class="step-info" id="stepInfo">— / —</span>
+  <button class="ctrl" onclick="goFirst()">⏮</button>
+  <button class="ctrl" onclick="goPrev()">◀</button>
+  <button class="ctrl play" id="playBtn" onclick="togglePlay()">▶ Play</button>
+  <button class="ctrl" onclick="goNext()">Próximo ▶</button>
+  <button class="ctrl" onclick="reset()">↺</button>
+</div>
+<div class="prog"><div class="prog-fill" id="pf" style="width:0%"></div></div>
+
+<div class="stage">
+
+<!-- PHONE -->
+<div class="phone-panel">
+  <div class="ph-lbl" id="phLbl">App Bradesco · iOS</div>
+  <div class="phone">
+    <div class="ph-notch"><div class="ph-pill"><div class="spk"></div><div class="cam"></div></div></div>
+    <div class="ph-body">
+
+      <!-- HOME -->
+      <div class="ph-screen home" id="sc-home">
+        <div class="home-st"><span>09:14</span><span>●●● ▌</span></div>
+        <div class="home-hd">
+          <div class="home-logo">Bradesco</div>
+          <div class="home-gr">Olá, Raul 👋</div>
+        </div>
+        <div class="home-bc">
+          <div class="hbc-l">SALDO DISPONÍVEL</div>
+          <div class="hbc-v">R$ 4.832,00</div>
+          <div class="hbc-s">Conta Corrente •••• 4521</div>
+        </div>
+        <div class="home-sh">
+          <div class="sh-i"><div class="sh-ico" style="background:rgba(255,255,255,.1)">💸</div><div class="sh-l">Pix</div></div>
+          <div class="sh-i"><div class="sh-ico" style="background:rgba(255,255,255,.1)">💳</div><div class="sh-l">Cartão</div></div>
+          <div class="sh-i"><div class="sh-ico" style="background:rgba(255,255,255,.1)">📊</div><div class="sh-l">Extrato</div></div>
+          <div class="sh-i"><div class="sh-ico" style="background:rgba(255,255,255,.1)">📈</div><div class="sh-l">Invest.</div></div>
+        </div>
+        <div class="home-st2">Serviços</div>
+        <div class="home-list">
+          <div class="hl-card vaas" id="vaas-btn" onclick="startJourney()">
+            <div class="hl-ico">🚗</div>
+            <div class="hl-vaas"><div class="hl-nm">Débitos de Veículo</div><div class="hl-sb">Pague tributos pelo chat</div></div>
+            <div class="hl-arr">›</div>
+          </div>
+          <div class="hl-card"><div class="hl-ico">🏠</div><div><div class="hl-nm">Imóveis</div><div class="hl-sb">Financiamento habitacional</div></div><div class="hl-arr">›</div></div>
+          <div class="hl-card"><div class="hl-ico">📱</div><div><div class="hl-nm">Seguros</div><div class="hl-sb">Auto, vida, residencial</div></div><div class="hl-arr">›</div></div>
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <div class="ph-screen off" id="sc-chat">
+        <div class="chat">
+          <div class="ch-hd">
+            <button class="ch-back" onclick="reset()">‹</button>
+            <div class="ch-ava">B</div>
+            <div class="ch-info">
+              <div class="ch-nm">Débitos de Veículo</div>
+              <div class="ch-st" id="chSt">Assistente VaaS · online</div>
+            </div>
+          </div>
+          <div class="msgs" id="msgs"></div>
+          <div class="qr-area" id="qrArea" style="display:none;"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- AWS PANEL -->
+<div class="aws-panel">
+  <div class="aws-title">Arquitetura AWS · sa-east-1 <span></span></div>
+  <div class="arch">
+
+    <div class="nr">
+      <div class="nd n-app" id="nd-app" style="flex:1;">
+        <div class="nd-ic">📱</div>
+        <div><div class="nd-nm">App Bradesco</div><div class="nd-sb">iOS · sessão ativa · clienteId disponível</div><div class="nd-st" id="st-app">requisição</div></div>
+      </div>
+    </div>
+
+    <div class="arr">↓ HTTPS · token de sessão</div>
+
+    <div class="nr">
+      <div class="nd n-br" id="nd-br" style="flex:1;">
+        <div class="nd-ic">🤖</div>
+        <div><div class="nd-nm">Bridge · Bedrock Agent</div><div class="nd-sb">Claude Sonnet · orquestrador · guardrails</div><div class="nd-st" id="st-br">raciocinando</div></div>
+      </div>
+    </div>
+
+    <div class="arr">↓ tool call MCP</div>
+
+    <div class="nr" style="gap:8px;">
+      <div class="nd n-mcp" id="nd-mcp" style="flex:1;">
+        <div class="nd-ic">⚙️</div>
+        <div><div class="nd-nm">VaaS MCP Server</div><div class="nd-sb">ECS Fargate · middleware · gate</div><div class="nd-st" id="st-mcp">executando</div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div class="nd n-sfn" id="nd-sfn">
+          <div class="nd-ic" style="font-size:13px;">🔄</div>
+          <div><div class="nd-nm" style="font-size:10.5px;">Step Functions</div><div class="nd-sb">saga pagamento</div><div class="nd-st" id="st-sfn">saga ativa</div></div>
+        </div>
+        <div class="nd n-dyn" id="nd-dyn">
+          <div class="nd-ic" style="font-size:13px;">📦</div>
+          <div><div class="nd-nm" style="font-size:10.5px;">DynamoDB</div><div class="nd-sb">idempotência · sagaId</div><div class="nd-st" id="st-dyn">gravando</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arr">↓ HTTPS · OAuth2 Bearer · VPN → Axway</div>
+
+    <div class="nr">
+      <div class="nd n-ax" id="nd-ax" style="flex:1;">
+        <div class="nd-ic">⚡</div>
+        <div><div class="nd-nm">Axway API Gateway</div><div class="nd-sb">autenticação · rate limit · audit log · 4.400+ APIs</div><div class="nd-st" id="st-ax">roteando</div></div>
+      </div>
+    </div>
+
+    <div class="arr">↓ roteamento → lcbr-srv-debito-veiculo</div>
+
+    <!-- MICROSERVICE ENDPOINTS -->
+    <div class="nr">
+      <div class="svc-box" id="nd-svc">
+        <div class="svc-name">🏛️ lcbr-srv-debito-veiculo <span id="svc-ep-label">aguardando</span></div>
+        <div class="ep-list">
+          <div class="ep-item" id="ep-lista">
+            <span class="ep-method get">GET</span>
+            <span class="ep-path">/veiculo/lista-positiva</span>
+            <span class="ep-svc">cadastro · validação</span>
+          </div>
+          <div class="ep-item" id="ep-tipos">
+            <span class="ep-method get">GET</span>
+            <span class="ep-path">/debito/tipos</span>
+            <span class="ep-svc">lista tipos débitos</span>
+          </div>
+          <div class="ep-item" id="ep-consulta-ipva">
+            <span class="ep-method post">POST</span>
+            <span class="ep-path">/debito/consulta</span>
+            <span class="ep-svc" id="lbl-consulta-ipva">IPVA_ATUAL · IPVA_ANTERIOR</span>
+          </div>
+          <div class="ep-item" id="ep-consulta-lic">
+            <span class="ep-method post">POST</span>
+            <span class="ep-path">/debito/consulta</span>
+            <span class="ep-svc" id="lbl-consulta-lic">LICENCIAMENTO · DEBITOS_PENDENTES</span>
+          </div>
+          <div class="ep-item" id="ep-consulta-outros">
+            <span class="ep-method post">POST</span>
+            <span class="ep-path">/debito/consulta</span>
+            <span class="ep-svc" id="lbl-consulta-outros">MULTA · TAXAS · PRIMEIRO_REGISTRO</span>
+          </div>
+          <div class="ep-item" id="ep-pag-ipva">
+            <span class="ep-method post">POST</span>
+            <span class="ep-path">/debito/pagamento</span>
+            <span class="ep-svc">IPVA_ATUAL · VIA RENAVAM</span>
+          </div>
+          <div class="ep-item" id="ep-pag-lic">
+            <span class="ep-method post">POST</span>
+            <span class="ep-path">/debito/pagamento</span>
+            <span class="ep-svc">LICENCIAMENTO · VIA RENAVAM</span>
+          </div>
+          <div class="ep-item" id="ep-pag-taxa">
+            <span class="ep-method post">POST</span>
+            <span class="ep-path">/debito/pagamento</span>
+            <span class="ep-svc" id="lbl-pag-taxa">TAXAS · TAXAS DETRAN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="log">
+    <div class="log-step" id="logStep">Aguardando início</div>
+    <div class="log-msg" id="logMsg">Toque em <b>▶ Play</b> ou no botão <b>Débitos de Veículo</b> no app</div>
+  </div>
+</div>
+
+</div>
+
+<script>
+var mode = 'mvp';
+var step = -1;
+var playing = false;
+var ptimer = null;
+var ALLNODES = ['app','br','mcp','sfn','dyn','ax'];
+var ALLEPS = ['lista','tipos','consulta-ipva','consulta-lic','consulta-outros','pag-ipva','pag-lic','pag-taxa'];
+
+function setMode(m, btn){
+  mode = m;
+  document.querySelectorAll('.mode-btn').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('phLbl').textContent = m === 'back'
+    ? '📌 Backlog · não implementado'
+    : (m === 'prod' ? 'Produção · App Bradesco · iOS' : 'MVP · App Bradesco · iOS');
+  reset();
+}
+
+function getSteps(){
+  var prod = (mode === 'prod');
+  var back = (mode === 'back');
+  return [
+    {
+      label:'Home · Débitos de Veículo',
+      screen:'home', nodes:[], eps:[],
+      log:'Raul acessa o app e vê o botão Débitos de Veículo',
+      msg:'Toque no botão <b>Débitos de Veículo</b> para iniciar'
+    },
+    {
+      label:'Chat aberto · coleta da placa',
+      screen:'chat', nodes:['app','br'], eps:[],
+      log:'Bridge recebe sessão do app. clienteId disponível. Agente pede a placa.',
+      statusLbl:'GET /debito/tipos em breve',
+      messages:[
+        {r:'agent',h:'Olá, <b>Raul</b>! 👋<br>Vou consultar e pagar os débitos do seu veículo de forma rápida e segura, tudo por aqui mesmo.<br><br>Qual a <b>placa do veículo</b>?'}
+      ],
+      qr:['ABC1D23','Informar outra placa']
+    },
+    {
+      label:'Usuário informa a placa',
+      screen:'chat', nodes:['br'], eps:[],
+      log:'Agente interpreta a placa e dispara tool: verificar_veiculo.',
+      messages:[{r:'user',h:'ABC1D23'}],
+      qr:[]
+    },
+    {
+      label:'GET /veiculo/lista-positiva · validação cadastral',
+      screen:'chat', nodes:['app','br','mcp','ax'], eps:['lista'],
+      epLabel:'lista-positiva',
+      nodeStatus:{app:'sessão ativa',br:'tool: verificar_veiculo',mcp:'GET lista-positiva · Axway',ax:'→ lcbr-srv-debito-veiculo'},
+      log:'MCP Server chama GET /veiculo/lista-positiva. Valida RENAVAM e situação do veículo.',
+      messages:[
+        {r:'agent',h:'Verificando o cadastro do veículo...'},
+        {r:'agent',card:'vehicle'}
+      ],
+      qr:['Confirmar','Outra placa']
+    },
+    {
+      label:'GET /debito/tipos · lista de débitos disponíveis',
+      screen:'chat', nodes:['br','mcp','ax'], eps:['tipos'],
+      epLabel:'tipos',
+      nodeStatus:{br:'tool: listar_tipos_debito',mcp:'GET /debito/tipos · UF=SP',ax:'→ lcbr-srv-debito-veiculo'},
+      log:'Busca os tipos de débito disponíveis para SP antes de fazer as consultas individuais.',
+      messages:[{r:'agent',h:'Buscando tipos de débitos disponíveis para SP...'}],
+      qr:[]
+    },
+    {
+      label:'POST /debito/consulta · IPVA_ATUAL + IPVA_ANTERIOR',
+      screen:'chat', nodes:['br','mcp','ax'], eps:['consulta-ipva'],
+      epLabel:'consulta: IPVA_ATUAL · IPVA_ANTERIOR',
+      nodeStatus:{br:'tool: consultar_debito (IPVA)',mcp:'POST /debito/consulta · VIA RENAVAM',ax:'nomeServico: IPVA_ATUAL'},
+      log:'POST /debito/consulta com tipoDebito=VIA RENAVAM e nomeServico=IPVA_ATUAL, IPVA_ANTERIOR.',
+      messages:[{r:'agent',h:'Consultando IPVA 2024 e pendências anteriores...'}],
+      qr:[]
+    },
+    {
+      label:'POST /debito/consulta · LICENCIAMENTO + DEBITOS_PENDENTES',
+      screen:'chat', nodes:['mcp','ax'], eps:['consulta-lic'],
+      epLabel:'consulta: LICENCIAMENTO',
+      nodeStatus:{mcp:'POST /debito/consulta · LICENCIAMENTO',ax:'nomeServico: LICENCIAMENTO · DEBITOS_PENDENTES'},
+      log:'POST /debito/consulta com nomeServico=LICENCIAMENTO e DEBITOS_PENDENTES.',
+      messages:[{r:'agent',h:'Consultando licenciamento e débitos pendentes...'}],
+      qr:[]
+    },
+    {
+      label: prod ? 'POST /debito/consulta · MULTA + TAXAS + PRIMEIRO_REGISTRO' : 'POST /debito/consulta · MULTA + TAXAS (MVP)',
+      screen:'chat', nodes:['mcp','ax'], eps:['consulta-outros'],
+      epLabel: prod ? 'consulta: MULTA · TAXAS · PRIMEIRO_REGISTRO' : 'consulta: MULTA · TAXAS',
+      nodeStatus:{mcp:'POST /debito/consulta · MULTA + TAXAS',ax: prod ? 'nomeServico: MULTA · TAXAS · PRIMEIRO_REGISTRO' : 'nomeServico: MULTA · TAXAS'},
+      log: prod ? 'Consulta MULTA, MULTA_OUTROS_ESTADOS, TAXAS DETRAN e PRIMEIRO_REGISTRO (produção).' : 'MVP: consulta MULTA e TAXAS DETRAN.',
+      messages:[{r:'agent',h: prod ? 'Consultando multas, taxas DETRAN e primeiro registro...' : 'Consultando multas e taxas DETRAN...'}],
+      qr:[]
+    },
+    {
+      label:'Resumo de débitos · seleção pelo usuário',
+      screen:'chat', nodes:['br'], eps:[],
+      log:'Agente consolida todas as respostas e apresenta o resumo para seleção.',
+      nodeStatus:{br:'consolidando respostas · zero network calls'},
+      messages:[
+        {r:'agent',h:'Encontrei os seguintes débitos. Selecione o que deseja pagar:'},
+        {r:'agent',card: prod ? 'debitos-prod' : 'debitos-mvp'}
+      ],
+      qr:['Pagar todos selecionados','Selecionar itens','Cancelar']
+    },
+    {
+      label:'Confirmação · Gate de Política · Saga inicia',
+      screen:'chat', nodes:['br','mcp','sfn','dyn'], eps:[],
+      nodeStatus:{br:'confirmação recebida',mcp:'gate ✓ · idempotência · sagaId gerado',sfn:'saga EXPRESS · iniciando',dyn:'sagaId gravado'},
+      log:'Gate de política validado. Step Functions Express saga iniciada. DynamoDB grava idempotency key.',
+      messages:[{r:'agent',h:'Perfeito! Iniciando pagamento com segurança...<br><small style="color:#888">🔐 Gate validado · saga iniciada · idempotência ativa</small>'}],
+      qr:[]
+    },
+    {
+      label:'POST /debito/pagamento · IPVA_ATUAL · VIA RENAVAM',
+      screen:'chat', nodes:['mcp','sfn','ax'], eps:['pag-ipva'],
+      epLabel:'pagamento: IPVA_ATUAL · VIA RENAVAM',
+      nodeStatus:{mcp:'pagar_debito: IPVA_ATUAL',sfn:'estado: PagarIPVA',ax:'POST /debito/pagamento · IPVA_ATUAL'},
+      log:'Step Functions executa: POST /debito/pagamento. tipoDebito=VIA RENAVAM, nomeServico=IPVA_ATUAL.',
+      messages:[{r:'agent',card:'saga-ipva'}],
+      qr:[]
+    },
+    {
+      label:'POST /debito/pagamento · LICENCIAMENTO · VIA RENAVAM',
+      screen:'chat', nodes:['mcp','sfn','ax'], eps:['pag-lic'],
+      epLabel:'pagamento: LICENCIAMENTO · VIA RENAVAM',
+      nodeStatus:{mcp:'pagar_debito: LICENCIAMENTO',sfn:'estado: PagarLicenciamento',ax:'POST /debito/pagamento · LICENCIAMENTO'},
+      log:'POST /debito/pagamento com nomeServico=LICENCIAMENTO. Protocolo DETRAN emitido.',
+      messages:[{r:'agent',card:'saga-lic'}],
+      qr:[]
+    },
+    {
+      label: prod ? 'POST /debito/pagamento · TAXAS DETRAN + MULTA' : 'POST /debito/pagamento · TAXAS · TAXAS DETRAN',
+      screen:'chat', nodes:['mcp','sfn','ax'], eps:['pag-taxa'],
+      epLabel: prod ? 'pagamento: TAXAS · MULTA' : 'pagamento: TAXAS DETRAN',
+      nodeStatus:{mcp: prod ? 'pagar_debito: TAXAS + MULTA' : 'pagar_debito: TAXAS',sfn: prod ? 'estado: PagarTaxasMultas' : 'estado: PagarTaxas',ax:'POST /debito/pagamento · TAXAS DETRAN'},
+      log: prod ? 'Produção: paga TAXAS DETRAN e eventuais MULTA/MULTA_OUTROS_ESTADOS na mesma saga.' : 'POST /debito/pagamento. tipoDebito=TAXAS DETRAN, nomeServico=TAXAS.',
+      messages:[{r:'agent',card: prod ? 'saga-taxa-prod' : 'saga-taxa'}],
+      qr:[]
+    },
+    {
+      label:'Pagamentos concluídos · comprovante',
+      screen:'chat', nodes:['app','br'], eps:[],
+      nodeStatus:{app:'jornada concluída',br:'respondendo com comprovante'},
+      log:'Saga concluída. Todos os protocolos confirmados. Comprovante gerado.',
+      messages:[{r:'agent',card:'success'}],
+      qr:['Ver comprovante','Novo débito','Início']
+    }
+  ];
+}
+
+// CARDS
+function card(type){
+  if(type==='vehicle') return '<div class="cc"><div class="cc-hd" style="background:var(--brad)">🚗 Veículo Identificado · lista-positiva</div><div class="cc-bd"><div class="cc-r"><span>Placa</span><span class="v">ABC1D23</span></div><div class="cc-r"><span>Modelo</span><span class="v">Chevrolet Onix 1.0 2022</span></div><div class="cc-r"><span>RENAVAM</span><span class="v">012.345.678-90</span></div><div class="cc-r"><span>Situação</span><span class="v vg">✓ Regular</span></div><div class="cc-r"><span>UF</span><span class="v">São Paulo</span></div></div></div>';
+  if(type==='debitos-mvp') return '<div class="debt-sel"><div class="ds-hd">📋 Débitos encontrados · SP · 2024</div><div class="ds-item"><div class="ds-chk on">✓</div><div><div class="ds-name">IPVA 2024</div><div class="ds-svc">IPVA_ATUAL · VIA RENAVAM</div></div><span class="ds-val">R$ 1.119,85</span></div><div class="ds-item"><div class="ds-chk on">✓</div><div><div class="ds-name">Licenciamento</div><div class="ds-svc">LICENCIAMENTO · VIA RENAVAM</div></div><span class="ds-val">R$ 212,60</span></div><div class="ds-item"><div class="ds-chk on">✓</div><div><div class="ds-name">Taxas DETRAN</div><div class="ds-svc">TAXAS · TAXAS DETRAN</div></div><span class="ds-val">R$ 44,20</span></div><div class="ds-item"><div class="ds-chk" style="background:#f0f0f0;border-color:#ddd;"></div><div><div class="ds-name">Multas</div><div class="ds-svc">MULTA · MULTA_OUTROS_ESTADOS</div></div><span class="ds-val vm">sem débitos ✓</span></div><div class="ds-ft"><span class="ds-note">3 itens selecionados</span><span class="tot">R$ 1.376,65</span></div></div>';
+  if(type==='debitos-prod') return '<div class="debt-sel"><div class="ds-hd">📋 Débitos encontrados · SP · 2024 · Todos os tipos</div><div class="ds-item"><div class="ds-chk on">✓</div><div><div class="ds-name">IPVA 2024</div><div class="ds-svc">IPVA_ATUAL · VIA RENAVAM</div></div><span class="ds-val">R$ 1.119,85</span></div><div class="ds-item"><div class="ds-chk on">✓</div><div><div class="ds-name">IPVA 2023 (anterior)</div><div class="ds-svc">IPVA_ANTERIOR · VIA RENAVAM</div></div><span class="ds-val">R$ 89,00</span></div><div class="ds-item"><div class="ds-chk on">✓</div><div><div class="ds-name">Licenciamento</div><div class="ds-svc">LICENCIAMENTO · VIA RENAVAM</div></div><span class="ds-val">R$ 212,60</span></div><div class="ds-item"><div class="ds-chk on">✓</div><div><div class="ds-name">Taxas DETRAN</div><div class="ds-svc">TAXAS · TAXAS DETRAN</div></div><span class="ds-val">R$ 44,20</span></div><div class="ds-item"><div class="ds-chk" style="background:#f0f0f0;border-color:#ddd;"></div><div><div class="ds-name">Multas</div><div class="ds-svc">MULTA · MULTA_OUTROS_ESTADOS</div></div><span class="ds-val vm">sem débitos ✓</span></div><div class="ds-item"><div class="ds-chk" style="background:#f0f0f0;border-color:#ddd;"></div><div><div class="ds-name">Primeiro Registro</div><div class="ds-svc">PRIMEIRO_REGISTRO · VEICULOS NOVOS</div></div><span class="ds-val vm">não aplicável</span></div><div class="ds-ft"><span class="ds-note">4 itens selecionados</span><span class="tot">R$ 1.465,65</span></div></div>';
+  if(type==='saga-ipva') return '<div class="cc"><div class="cc-hd" style="background:#0d7a5f">✓ IPVA 2024 · pago</div><div class="cc-bd"><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>IPVA 2024 — R$ 1.119,85 · <b>pago</b></div><div class="proto">POST /debito/pagamento · IPVA_ATUAL · VIA RENAVAM</div></div></div><div class="saga-item"><div class="ss-ic ss-run" style="animation:none;">↻</div><div>Licenciamento · processando...</div></div><div class="saga-item"><div class="ss-ic ss-wait">○</div><div>Taxas DETRAN · aguardando</div></div></div><div class="cc-ft"><span>Protocolo SEFAZ</span><span class="v">SP-IPVA-2024-7834</span></div></div>';
+  if(type==='saga-lic') return '<div class="cc"><div class="cc-hd" style="background:#0d7a5f">✓ Licenciamento · pago</div><div class="cc-bd"><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>IPVA 2024 — R$ 1.119,85</div><div class="proto">Protocolo SP-IPVA-2024-7834</div></div></div><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>Licenciamento — R$ 212,60 · <b>pago</b></div><div class="proto">POST /debito/pagamento · LICENCIAMENTO · VIA RENAVAM</div></div></div><div class="saga-item"><div class="ss-ic ss-run" style="animation:none;">↻</div><div>Taxas DETRAN · processando...</div></div></div></div>';
+  if(type==='saga-taxa') return '<div class="cc"><div class="cc-hd" style="background:#0d7a5f">✓ Taxas DETRAN · pagas</div><div class="cc-bd"><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>IPVA 2024 — R$ 1.119,85</div></div></div><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>Licenciamento — R$ 212,60</div></div></div><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>Taxas DETRAN — R$ 44,20 · <b>pago</b></div><div class="proto">POST /debito/pagamento · TAXAS · TAXAS DETRAN</div></div></div></div><div class="cc-ft"><span>Protocolo DETRAN</span><span class="v">DETRAN-TAXA-3344</span></div></div>';
+  if(type==='saga-taxa-prod') return '<div class="cc"><div class="cc-hd" style="background:#0d7a5f">✓ Produção · Saga concluída</div><div class="cc-bd"><div class="saga-item"><div class="ss-ic ss-done">✓</div><div>IPVA 2024 + IPVA 2023 anterior pagos</div></div><div class="saga-item"><div class="ss-ic ss-done">✓</div><div>Licenciamento pago</div></div><div class="saga-item"><div class="ss-ic ss-done">✓</div><div>Taxas DETRAN pagas</div></div></div><div class="cc-ft"><span>Total pago</span><span class="v">R$ 1.465,65</span></div></div>';
+  if(type==='success') return '<div class="cc"><div class="cc-hd" style="background:#0d7a5f">🎉 Tudo quitado, Raul!</div><div class="cc-bd"><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>IPVA 2024 — R$ 1.119,85</div><div class="proto">Protocolo: SP-IPVA-2024-7834</div></div></div><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>Licenciamento — R$ 212,60</div><div class="proto">Protocolo: DETRAN-LIC-2024-9201</div></div></div><div class="saga-item"><div class="ss-ic ss-done">✓</div><div><div>Taxas DETRAN — R$ 44,20</div><div class="proto">Protocolo: DETRAN-TAXA-3344</div></div></div></div><div class="cc-ft"><span>Total debitado em •••• 4521</span><span class="v">R$ 1.376,65</span></div></div>';
+  return '';
+}
+
+// RENDERING
+function showScreen(id){
+  document.querySelectorAll('.ph-screen').forEach(function(s){s.classList.add('off');});
+  document.getElementById('sc-'+id).classList.remove('off');
+}
+
+function setNodes(active, statuses){
+  ALLNODES.forEach(function(n){
+    var el = document.getElementById('nd-'+n);
+    if(el) el.classList.toggle('on', active.indexOf(n) > -1);
+    var st = document.getElementById('st-'+n);
+    if(st && statuses && statuses[n]) st.textContent = statuses[n];
+  });
+}
+
+function setEndpoints(active, label){
+  ALLEPS.forEach(function(e){
+    var el = document.getElementById('ep-'+e);
+    if(el) el.classList.toggle('on', active.indexOf(e) > -1);
+  });
+  var svcEl = document.getElementById('nd-svc');
+  var lblEl = document.getElementById('svc-ep-label');
+  if(svcEl) svcEl.classList.toggle('on', active.length > 0);
+  if(lblEl) lblEl.textContent = active.length > 0 ? (label || 'chamando') : 'aguardando';
+}
+
+function removeTyping(){ var t=document.getElementById('td-el'); if(t)t.remove(); }
+function addTyping(){
+  removeTyping();
+  var area=document.getElementById('msgs');
+  var row=document.createElement('div');
+  row.className='mb agent'; row.id='td-el';
+  row.innerHTML='<div class="mb-av">B</div><div class="td"><span></span><span></span><span></span></div>';
+  area.appendChild(row);
+  area.scrollTop=area.scrollHeight;
+}
+
+function addMsg(r, h, c){
+  var area=document.getElementById('msgs');
+  var row=document.createElement('div');
+  row.className='mb '+r;
+  var av=document.createElement('div');
+  av.className='mb-av'; av.textContent=r==='agent'?'B':'R';
+  var bub=document.createElement('div');
+  bub.className='mb-bub';
+  if(c) bub.innerHTML=card(c); else bub.innerHTML=h||'';
+  row.appendChild(av); row.appendChild(bub);
+  area.appendChild(row);
+  area.scrollTop=area.scrollHeight;
+}
+
+function setQR(replies){
+  var qa=document.getElementById('qrArea');
+  if(!replies||replies.length===0){qa.style.display='none';return;}
+  qa.style.display='flex'; qa.innerHTML='';
+  replies.forEach(function(r){
+    var b=document.createElement('button');
+    b.className='qr-btn'; b.textContent=r;
+    b.onclick=function(){
+      document.querySelectorAll('.qr-btn').forEach(function(x){x.classList.remove('sel');});
+      b.classList.add('sel'); goNext();
+    };
+    qa.appendChild(b);
+  });
+}
+
+function applyStep(idx){
+  var steps=getSteps();
+  if(idx<0||idx>=steps.length) return;
+  step=idx;
+  var s=steps[idx];
+  document.getElementById('pf').style.width=((idx+1)/steps.length*100)+'%';
+  document.getElementById('stepInfo').textContent=(idx+1)+' / '+steps.length;
+  showScreen(s.screen||'home');
+  document.getElementById('logStep').textContent='Step '+(idx+1)+' · '+s.label;
+  document.getElementById('logMsg').innerHTML=s.log||'';
+  if(s.statusLbl) document.getElementById('chSt').textContent=s.statusLbl;
+  setNodes(s.nodes||[], s.nodeStatus||{});
+  setEndpoints(s.eps||[], s.epLabel||'');
+  setQR([]);
+  if(s.messages&&s.messages.length>0){
+    addTyping();
+    var delay=600;
+    s.messages.forEach(function(m,i){
+      (function(msg,d){
+        setTimeout(function(){
+          if(i===s.messages.length-1) removeTyping();
+          addMsg(msg.r, msg.h, msg.card);
+          if(i===s.messages.length-1) setQR(s.qr||[]);
+        },d);
+      })(m, delay + i*550);
+    });
+  } else {
+    setQR(s.qr||[]);
+  }
+}
+
+function goNext(){ var s=getSteps(); if(step<s.length-1) applyStep(step+1); else stopPlay(); }
+function goPrev(){ if(step>0) applyStep(step-1); }
+function goFirst(){ applyStep(0); }
+function togglePlay(){ playing?stopPlay():startPlay(); }
+function startPlay(){
+  playing=true;
+  document.getElementById('playBtn').textContent='⏸ Pausar';
+  if(step<0) applyStep(0);
+  ptimer=setInterval(function(){
+    var s=getSteps();
+    if(step>=s.length-1){stopPlay();return;}
+    goNext();
+  },2800);
+}
+function stopPlay(){ playing=false; clearInterval(ptimer); document.getElementById('playBtn').textContent='▶ Play'; }
+function reset(){
+  stopPlay(); step=-1;
+  document.getElementById('pf').style.width='0%';
+  document.getElementById('stepInfo').textContent='— / —';
+  document.getElementById('msgs').innerHTML='';
+  document.getElementById('qrArea').style.display='none';
+  document.getElementById('qrArea').innerHTML='';
+  document.getElementById('chSt').textContent='Assistente VaaS · online';
+  document.getElementById('logStep').textContent='Aguardando início';
+  document.getElementById('logMsg').innerHTML='Toque em <b>▶ Play</b> ou no botão <b>Débitos de Veículo</b> no app';
+  setNodes([],{}); setEndpoints([]);
+  showScreen('home');
+}
+function startJourney(){ stopPlay(); applyStep(0); setTimeout(function(){applyStep(1);},350); }
+reset();
+</script>
+</body>
+</html>

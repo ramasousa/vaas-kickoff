@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaaS · Gap Analysis · Completude do Showcase</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#06080d;--s1:#0d1017;--s2:#131922;--s3:#1a2332;
+  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.04);
+  --brad:#CC092F;--brad-g:rgba(204,9,47,.1);
+  --ok:#2dd4a8;--ok-g:rgba(45,212,168,.1);
+  --warn:#f59e0b;--warn-g:rgba(245,158,11,.1);
+  --risk:#ef4444;--risk-g:rgba(239,68,68,.1);
+  --blue:#4ea8de;--blue-g:rgba(78,168,222,.1);
+  --violet:#9b87f5;--violet-g:rgba(155,135,245,.1);
+  --orange:#ff7a45;--orange-g:rgba(255,122,69,.1);
+  --text:#e4e9f4;--muted:#6b7994;--muted2:#2e3a4a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+
+.hero{padding:48px 44px 36px;border-bottom:1px solid var(--b1);position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-160px;right:-80px;width:500px;height:500px;background:radial-gradient(circle,rgba(245,158,11,.07) 0%,transparent 60%);pointer-events:none;}
+.hero-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--warn);margin-bottom:14px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(22px,3.5vw,40px);font-weight:800;line-height:1.1;max-width:780px;margin-bottom:12px;}
+.hero h1 em{color:var(--warn);font-style:normal;}
+.hero-sub{font-size:14px;color:var(--muted);max-width:680px;line-height:1.7;font-weight:300;}
+
+/* SCORE STRIP */
+.score-strip{display:flex;gap:0;border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);}
+.score-item{flex:1;padding:18px 24px;border-right:1px solid var(--b1);}
+.score-item:last-child{border-right:none;}
+.score-n{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:3px;}
+.score-l{font-size:11.5px;color:var(--muted);}
+.score-bar{height:4px;background:var(--b1);border-radius:2px;margin-top:8px;overflow:hidden;}
+.score-fill{height:100%;border-radius:2px;}
+
+/* NAV */
+.nav{display:flex;gap:2px;padding:0 44px;border-bottom:1px solid var(--b1);background:var(--bg);position:sticky;top:0;z-index:20;overflow-x:auto;}
+.nt{background:none;border:none;color:var(--muted);font-family:'DM Sans';font-size:12px;font-weight:500;padding:13px 11px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;}
+.nt:hover{color:var(--text);}
+.nt.a{color:var(--text);border-bottom-color:var(--warn);}
+
+.main{max-width:1160px;margin:0 auto;padding:36px 44px 100px;}
+.sec{display:none;animation:fi .18s ease;}
+.sec.a{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+.sh{display:flex;align-items:baseline;gap:10px;margin-bottom:5px;}
+.sn{font-family:'DM Mono',monospace;font-size:11px;color:var(--warn);}
+.st{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;}
+.ss{color:var(--muted);font-size:13.5px;line-height:1.65;max-width:760px;margin-bottom:28px;}
+h3.sub{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin:30px 0 12px;}
+p.ld{font-size:13.5px;line-height:1.75;color:#c5ccd8;margin-bottom:12px;max-width:780px;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;}
+@media(max-width:900px){.g2,.g3{grid-template-columns:1fr;}}
+
+.callout{border-left:3px solid var(--warn);background:var(--s1);border-radius:0 10px 10px 0;padding:14px 18px;font-size:13px;color:#c5ccd8;line-height:1.65;margin:14px 0;}
+.callout b{color:var(--text);}
+.callout.ok{border-left-color:var(--ok);}
+.callout.risk{border-left-color:var(--risk);}
+code{font-family:'DM Mono',monospace;font-size:11.5px;background:var(--s2);padding:2px 6px;border-radius:4px;color:var(--ok);}
+
+/* PHASE TAGS */
+.ph{display:inline-flex;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 8px;border-radius:10px;white-space:nowrap;font-family:'DM Mono',monospace;}
+.ph-bloq{background:var(--risk-g);color:var(--risk);}
+.ph-1{background:var(--brad-g);color:var(--brad);}
+.ph-2{background:var(--warn-g);color:var(--warn);}
+.ph-3{background:var(--violet-g);color:var(--violet);}
+.ph-back{background:var(--b2);color:var(--muted);}
+
+/* GAP TABLE */
+.gap-table{width:100%;border-collapse:collapse;margin:12px 0 24px;font-size:12.5px;}
+.gap-table th{text-align:left;font-family:'DM Mono';font-size:9px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);padding:9px 12px;border-bottom:1px solid var(--b1);}
+.gap-table td{padding:10px 12px;border-bottom:1px solid var(--b2);vertical-align:top;color:#c5ccd8;}
+.gap-table tr:last-child td{border-bottom:none;}
+.gap-table tr:hover td{background:rgba(255,255,255,.02);}
+.gap-table td:first-child{font-family:'DM Mono',monospace;font-size:11.5px;color:var(--ok);}
+.gap-table td.desc{color:var(--muted);font-size:12px;}
+.gap-table td.bloq{font-family:'DM Mono',monospace;font-size:10px;color:var(--risk);}
+
+/* UF MAP */
+.uf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:14px 0;}
+.uf-item{background:var(--s1);border:1px solid var(--b1);border-radius:9px;padding:10px 12px;}
+.uf-item.done{border-color:rgba(45,212,168,.35);background:rgba(45,212,168,.06);}
+.uf-item.partial{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);}
+.uf-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:4px;}
+.uf-item.done .uf-name{color:var(--ok);}
+.uf-item.partial .uf-name{color:var(--warn);}
+.uf-status{font-size:10px;color:var(--muted);}
+.uf-item.done .uf-status{color:rgba(45,212,168,.7);}
+
+/* FLOW GAPS */
+.flow-gap{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px 16px;margin-bottom:9px;display:flex;align-items:flex-start;gap:12px;}
+.fg-left{min-width:200px;flex-shrink:0;}
+.fg-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:5px;}
+.fg-desc{font-size:12px;color:var(--muted);line-height:1.55;flex:1;}
+.fg-desc b{color:#c5ccd8;}
+.fg-why{font-size:11.5px;color:var(--muted);margin-top:5px;padding-top:5px;border-top:1px solid var(--b2);}
+.fg-why strong{color:var(--warn);}
+
+/* INFRA CARDS */
+.infra-card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px;margin-bottom:9px;}
+.ic-head{display:flex;align-items:center;gap:10px;margin-bottom:7px;flex-wrap:wrap;gap:8px;}
+.ic-name{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;}
+.ic-body{font-size:12.5px;color:var(--muted);line-height:1.6;}
+.ic-body b{color:#c5ccd8;}
+
+/* ROADMAP */
+.roadmap{display:flex;gap:0;margin:18px 0;overflow-x:auto;padding-bottom:6px;}
+.rm-phase{flex:1;min-width:220px;}
+.rm-phase-hd{padding:12px 16px;border-radius:10px 10px 0 0;margin-bottom:0;}
+.rm-phase-hd-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;margin-bottom:2px;}
+.rm-phase-hd-sub{font-size:10px;opacity:.8;}
+.rm-phase-body{border:1px solid var(--b1);border-top:none;border-radius:0 0 10px 10px;padding:10px 12px;display:flex;flex-direction:column;gap:5px;}
+.rm-item{background:var(--s2);border-radius:7px;padding:7px 10px;font-size:11.5px;color:#c5ccd8;line-height:1.5;border-left:3px solid;}
+.rm-item small{display:block;font-size:9.5px;font-family:'DM Mono',monospace;margin-top:2px;}
+
+.legend-row{display:flex;gap:16px;flex-wrap:wrap;margin:12px 0 20px;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* COMPLETION DONUT placeholder (CSS only) */
+.completion-visual{display:flex;align-items:center;gap:24px;background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:20px 24px;margin-bottom:24px;}
+.comp-ring{width:80px;height:80px;border-radius:50%;background:conic-gradient(var(--ok) 0% 34%,var(--warn) 34% 60%,var(--risk) 60% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;}
+.comp-inner{width:54px;height:54px;border-radius:50%;background:var(--s1);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text);}
+.comp-legend{display:flex;flex-direction:column;gap:6px;}
+.cl-item{display:flex;align-items:center;gap:8px;font-size:12px;}
+.cl-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
+.comp-numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:1;}
+.cn-item{text-align:center;}
+.cn-n{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:2px;}
+.cn-l{font-size:11px;color:var(--muted);}
+
+.footer{text-align:center;padding:28px 0 12px;font-size:11px;color:var(--muted2);border-top:1px solid var(--b1);margin-top:48px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Gap Analysis · VaaS Open Platform · Completude do Showcase</div>
+  <h1>O que falta para<br><em>produção completa</em></h1>
+  <p class="hero-sub">Mapeamento de todas as lacunas entre o estado atual do showcase e a visão completa do VaaS — APIs ausentes, cobertura geográfica incompleta, fluxos fora do MVP, gaps de infraestrutura e conteúdo do Knowledge Base.</p>
+</div>
+
+<!-- SCORE STRIP -->
+<div class="score-strip">
+  <div class="score-item">
+    <div class="score-n" style="color:var(--ok)">34%</div>
+    <div class="score-l">Completude geral</div>
+    <div class="score-bar"><div class="score-fill" style="width:34%;background:var(--ok)"></div></div>
+  </div>
+  <div class="score-item">
+    <div class="score-n" style="color:var(--warn)">1/27</div>
+    <div class="score-l">UFs cobertas (só SP)</div>
+    <div class="score-bar"><div class="score-fill" style="width:4%;background:var(--warn)"></div></div>
+  </div>
+  <div class="score-item">
+    <div class="score-n" style="color:var(--brad)">8/22</div>
+    <div class="score-l">APIs mapeadas vs. necessárias</div>
+    <div class="score-bar"><div class="score-fill" style="width:36%;background:var(--brad)"></div></div>
+  </div>
+  <div class="score-item">
+    <div class="score-n" style="color:var(--violet)">4/14</div>
+    <div class="score-l">Fluxos de negócio cobertos</div>
+    <div class="score-bar"><div class="score-fill" style="width:29%;background:var(--violet)"></div></div>
+  </div>
+  <div class="score-item">
+    <div class="score-n" style="color:var(--blue)">40%</div>
+    <div class="score-l">Infraestrutura produção-ready</div>
+    <div class="score-bar"><div class="score-fill" style="width:40%;background:var(--blue)"></div></div>
+  </div>
+</div>
+
+<nav class="nav">
+  <button class="nt a" onclick="show('visao',this)">Visão Geral</button>
+  <button class="nt" onclick="show('apis',this)">APIs Faltantes</button>
+  <button class="nt" onclick="show('ufs',this)">Cobertura UFs</button>
+  <button class="nt" onclick="show('fluxos',this)">Fluxos Fora do MVP</button>
+  <button class="nt" onclick="show('infra',this)">Infraestrutura</button>
+  <button class="nt" onclick="show('kb',this)">Knowledge Base</button>
+  <button class="nt" onclick="show('mcp',this)">MCP Tools</button>
+  <button class="nt" onclick="show('roadmap',this)">Roadmap</button>
+</nav>
+
+<div class="main">
+
+<!-- ══════════ VISÃO GERAL ══════════ -->
+<div class="sec a" id="sec-visao">
+  <div class="sh"><span class="sn">01</span><h2 class="st">Visão Geral dos Gaps</h2></div>
+  <p class="ss">O showcase cobre a espinha dorsal da jornada — mas com escopo restrito a SP, tributos básicos e sem cobertura completa de infraestrutura para produção. Cada dimensão tem gaps classificados por severidade.</p>
+
+  <div class="completion-visual">
+    <div class="comp-ring"><div class="comp-inner">34%</div></div>
+    <div class="comp-legend">
+      <div class="cl-item"><div class="cl-dot" style="background:var(--ok)"></div>Implementado no showcase</div>
+      <div class="cl-item"><div class="cl-dot" style="background:var(--warn)"></div>Parcialmente coberto / fase 2</div>
+      <div class="cl-item"><div class="cl-dot" style="background:var(--risk)"></div>Gap crítico / bloqueador de produção</div>
+    </div>
+    <div class="comp-numbers">
+      <div class="cn-item"><div class="cn-n" style="color:var(--risk)">12</div><div class="cn-l">Blockers de produção</div></div>
+      <div class="cn-item"><div class="cn-n" style="color:var(--warn)">24</div><div class="cn-l">Gaps Fase 2</div></div>
+      <div class="cn-item"><div class="cn-n" style="color:var(--violet)">18</div><div class="cn-l">Backlog / Fase 3+</div></div>
+    </div>
+  </div>
+
+  <div class="legend-row">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--risk)"></div>Bloqueador — impede go-live em produção</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--warn)"></div>Fase 2 — necessário para escala</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--violet)"></div>Fase 3 — expande o produto</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--muted2)"></div>Backlog — melhoria futura</div>
+  </div>
+
+  <div class="g3">
+    <div style="background:var(--s1);border:1px solid rgba(239,68,68,.25);border-radius:12px;padding:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--risk);margin-bottom:10px;">🚨 Blockers Críticos</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.75;">
+        Multi-UF (26 estados ausentes)<br>
+        FIPE API externa não integrada<br>
+        Step-up auth pagamentos<br>
+        DPIA / LGPD formal<br>
+        BACEN 4.658 — relatório risco<br>
+        CI/CD pipeline produção<br>
+        Pen test infraestrutura<br>
+        Multi-AZ Redis<br>
+        VPC Flow Logs compliance<br>
+        Rotation Lambda Secrets<br>
+        Load test / stress test<br>
+        Knowledge Base 26 UFs
+      </div>
+    </div>
+    <div style="background:var(--s1);border:1px solid rgba(245,158,11,.25);border-radius:12px;padding:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--warn);margin-bottom:10px;">⚠ Fase 2 — Expansão</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.75;">
+        lcbr-srv-debito-veiculo multi-UF<br>
+        Agendamento IPVA<br>
+        2ª via CRV (SEGUNDA_VIA_CRV)<br>
+        Primeiro Registro (0KM)<br>
+        CRLV Digital pós-pagamento<br>
+        LaaS contratação<br>
+        Seguros contratação<br>
+        BaaS abertura de conta<br>
+        Veículo seminovo com restrição<br>
+        Direct Connect (DX)<br>
+        DR / backup automático<br>
+        Pipeline KB automático
+      </div>
+    </div>
+    <div style="background:var(--s1);border:1px solid rgba(155,135,245,.2);border-radius:12px;padding:16px;">
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:700;color:var(--violet);margin-bottom:10px;">🔮 Fase 3+ / Backlog</div>
+      <div style="font-size:12.5px;color:var(--muted);line-height:1.75;">
+        PIX dealer — split de pagamento<br>
+        Transferência de propriedade<br>
+        Multas federais (PRF / ANTT)<br>
+        Veículos PJ / frota<br>
+        Marketplace de dealers<br>
+        Notificação proativa de débitos<br>
+        Recall de veículos<br>
+        Gestão de frota corporativa<br>
+        Revisão / manutenção preventiva<br>
+        DPVAT verificação legacy<br>
+        Emplacamento digital DETRAN<br>
+        Score ESG de veículos EV
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APIS ══════════ -->
+<div class="sec" id="sec-apis">
+  <div class="sh"><span class="sn">02</span><h2 class="st">APIs Faltantes</h2></div>
+  <p class="ss">22 APIs identificadas como necessárias para a completude. 8 estão implementadas ou especificadas. 14 são gaps.</p>
+
+  <h3 class="sub">lcbr-srv-debito-veiculo — gaps dentro do próprio microserviço</h3>
+  <table class="gap-table">
+    <tr><th>Endpoint / nomeServico</th><th>Tipo Débito</th><th>Status atual</th><th>Fase</th></tr>
+    <tr>
+      <td>/veiculo/lista-positiva</td>
+      <td>Não se aplica</td>
+      <td style="color:var(--ok)">✓ Implementado (SP)</td>
+      <td><span class="ph ph-2">Fase 2 · multi-UF</span></td>
+    </tr>
+    <tr>
+      <td>/debito/tipos</td>
+      <td>Não se aplica</td>
+      <td style="color:var(--ok)">✓ Implementado (SP)</td>
+      <td><span class="ph ph-2">Fase 2 · multi-UF</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · IPVA_ATUAL</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--ok)">✓ Implementado (SP)</td>
+      <td><span class="ph ph-2">Fase 2 · multi-UF</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · IPVA_ANTERIOR</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--warn)">Parcial — só Produção</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · LICENCIAMENTO</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--ok)">✓ Implementado (SP)</td>
+      <td><span class="ph ph-2">Fase 2 · multi-UF</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · MULTA · MULTA_OUTROS_ESTADOS</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--ok)">✓ Implementado (SP)</td>
+      <td><span class="ph ph-2">Fase 2 · multi-UF</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · TAXAS</td>
+      <td>TAXAS DETRAN</td>
+      <td style="color:var(--ok)">✓ Implementado (SP)</td>
+      <td><span class="ph ph-2">Fase 2 · multi-UF</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · PRIMEIRO_REGISTRO</td>
+      <td>VEICULOS NOVOS</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · TRANSFERENCIA</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-3">Fase 3</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · SEGUNDA_VIA_CRV</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/consulta · DEBITOS_PENDENTES</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--warn)">Parcial — consultado sem exibição</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · IPVA_ATUAL</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--ok)">✓ Implementado</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · LICENCIAMENTO</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--ok)">✓ Implementado</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · TAXAS</td>
+      <td>TAXAS DETRAN</td>
+      <td style="color:var(--ok)">✓ Implementado</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · IPVA_ANTERIOR</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--warn)">Só modo Produção</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · PRIMEIRO_REGISTRO</td>
+      <td>VEICULOS NOVOS</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · MULTA</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · TRANSFERENCIA</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-3">Fase 3</span></td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · SEGUNDA_VIA_CRV</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>/debito/pagamento · Agendamento IPVA_ATUAL</td>
+      <td>VIA RENAVAM</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+  </table>
+
+  <h3 class="sub">APIs externas ao lcbr-srv — outros gaps</h3>
+  <table class="gap-table">
+    <tr><th>API / Serviço</th><th>Finalidade</th><th>Status</th><th>Fase</th></tr>
+    <tr>
+      <td>FIPE API (externa)</td>
+      <td class="desc">Valor de mercado do veículo — base para cálculo IPVA e financiamento</td>
+      <td style="color:var(--risk)">✗ Mockado no showcase</td>
+      <td><span class="ph ph-bloq">Bloqueador</span></td>
+    </tr>
+    <tr>
+      <td>RENAINF / Multas Federais</td>
+      <td class="desc">Multas PRF, ANTT, IBAMA — não cobertas pelo lcbr-srv</td>
+      <td style="color:var(--risk)">✗ Não mapeado</td>
+      <td><span class="ph ph-3">Fase 3</span></td>
+    </tr>
+    <tr>
+      <td>DETRAN Digital — CRLV</td>
+      <td class="desc">Emissão CRLV digital pós-pagamento de licenciamento</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>PIX API — Bradesco Core</td>
+      <td class="desc">Pagamento ao dealer (split) — backlog VaaS fase final</td>
+      <td style="color:var(--muted)">Backlog mapeado</td>
+      <td><span class="ph ph-3">Fase 3</span></td>
+    </tr>
+    <tr>
+      <td>LaaS — Contratação</td>
+      <td class="desc">Financiamento veicular — simulação existe, contratação não</td>
+      <td style="color:var(--warn)">Simulação apenas</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>Bradesco Seguros — Contratação</td>
+      <td class="desc">Emissão de apólice — especificado mas não no emulador de tributos</td>
+      <td style="color:var(--warn)">Especificado · não integrado</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>SENATRAN — Recall</td>
+      <td class="desc">Verificação de recalls ativos do modelo do veículo</td>
+      <td style="color:var(--risk)">✗ Não mapeado</td>
+      <td><span class="ph ph-back">Backlog</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════ UFs ══════════ -->
+<div class="sec" id="sec-ufs">
+  <div class="sh"><span class="sn">03</span><h2 class="st">Cobertura Geográfica — UFs</h2></div>
+  <p class="ss">O showcase cobre São Paulo integralmente. 26 estados e o Distrito Federal estão fora do escopo do MVP. Cada UF tem alíquotas de IPVA, prazos e regras de licenciamento distintos.</p>
+
+  <div class="callout risk"><b>Impacto crítico:</b> 63% dos veículos licenciados no Brasil estão fora de SP. Um cliente Bradesco com veículo em MG, RJ ou qualquer outro estado não pode usar o VaaS na fase atual. Sem multi-UF, a addressable market do produto é ~23% do total.</div>
+
+  <div class="uf-grid">
+    <div class="uf-item done"><div class="uf-name">São Paulo</div><div class="uf-status">✓ IPVA + Licenciamento + Taxas + Multas</div></div>
+    <div class="uf-item"><div class="uf-name">Minas Gerais</div><div class="uf-status">✗ Alíquotas EV a mapear · isenção parcial</div></div>
+    <div class="uf-item"><div class="uf-name">Rio de Janeiro</div><div class="uf-status">✗ Alíquota 3% (maior do país)</div></div>
+    <div class="uf-item"><div class="uf-name">Paraná</div><div class="uf-status">✗ Sistema DETRAN próprio</div></div>
+    <div class="uf-item"><div class="uf-name">Rio G. do Sul</div><div class="uf-status">✗ Alíquotas variáveis por categoria</div></div>
+    <div class="uf-item"><div class="uf-name">Bahia</div><div class="uf-status">✗ DETRAN BA · convênio próprio</div></div>
+    <div class="uf-item"><div class="uf-name">Santa Catarina</div><div class="uf-status">✗ Isenção EV desde 2022</div></div>
+    <div class="uf-item"><div class="uf-name">Goiás</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Pernambuco</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Ceará</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Mato Grosso</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Mato G. do Sul</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Espírito Santo</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Amazonas</div><div class="uf-status">✗ Zona Franca · regras esp.</div></div>
+    <div class="uf-item"><div class="uf-name">Pará</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Maranhão</div><div class="uf-status">✗ A mapear</div></div>
+    <div class="uf-item"><div class="uf-name">+ 11 UFs</div><div class="uf-status">✗ Todas a mapear</div></div>
+    <div class="uf-item"><div class="uf-name">Distrito Federal</div><div class="uf-status">✗ Legislação específica</div></div>
+  </div>
+
+  <h3 class="sub">O que é necessário por UF para habilitar</h3>
+  <table class="gap-table">
+    <tr><th>Item</th><th>Descrição</th><th>Fonte</th></tr>
+    <tr><td>Alíquota IPVA</td><td class="desc">% do valor FIPE. Varia de 1% (MT) a 3% (RJ). Inclui reduções para EV (13 UFs já têm)</td><td>Legislação estadual · atualização anual</td></tr>
+    <tr><td>Calendário de vencimento</td><td class="desc">Data de vencimento do IPVA varia por final de placa e por UF</td><td>SEFAZ de cada estado</td></tr>
+    <tr><td>Desconto à vista</td><td class="desc">Percentual de desconto para pagamento integral no vencimento. SP: 6,7% — outros variam</td><td>Legislação estadual</td></tr>
+    <tr><td>Tabela de licenciamento</td><td class="desc">Valor do CRLV e taxas DETRAN variam por UF e categoria do veículo</td><td>DETRAN de cada estado</td></tr>
+    <tr><td>Convênio no lcbr-srv</td><td class="desc">Verificar se cada UF já tem convênio com o Bradesco no microserviço</td><td>Time lcbr-srv-debito-veiculo</td></tr>
+    <tr><td>Knowledge Base</td><td class="desc">Documento de alíquotas e regras no Bedrock KB — 1 doc por UF</td><td>Open Platform · atualização anual</td></tr>
+  </table>
+</div>
+
+<!-- ══════════ FLUXOS ══════════ -->
+<div class="sec" id="sec-fluxos">
+  <div class="sh"><span class="sn">04</span><h2 class="st">Fluxos de Negócio Fora do MVP</h2></div>
+  <p class="ss">14 fluxos identificados na visão completa do VaaS. 4 estão cobertos no MVP atual. Os outros 10 são gaps com fases definidas.</p>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Pagamento de Multas</div><span class="ph ph-2">Fase 2</span></div>
+    <div>
+      <div class="fg-desc">O MVP consulta multas via <code>MULTA · MULTA_OUTROS_ESTADOS</code> mas <b>não executa o pagamento</b>. O endpoint <code>/debito/pagamento</code> com <code>nomeServico=MULTA</code> existe no lcbr-srv mas não foi integrado ao fluxo conversacional.</div>
+      <div class="fg-why"><strong>Bloqueio:</strong> requer tratamento de múltiplas multas com seleção individual + confirmação por multa (cada uma tem dados distintos de autuação).</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Primeiro Registro (0KM)</div><span class="ph ph-2">Fase 2</span></div>
+    <div>
+      <div class="fg-desc">Veículos novos (0KM) precisam de <b>Primeiro Registro</b> — tipo débito <code>VEICULOS NOVOS</code>, <code>nomeServico=PRIMEIRO_REGISTRO</code>. Fluxo diferente do licenciamento: inclui emplacamento, CRLV inicial e documentação adicional da montadora.</div>
+      <div class="fg-why"><strong>Impacto:</strong> sem este fluxo, o VaaS não serve a compra de veículos novos — que é justamente o maior volume da jornada que queremos habilitar.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Agendamento IPVA</div><span class="ph ph-2">Fase 2</span></div>
+    <div>
+      <div class="fg-desc">Alguns estados permitem agendar o pagamento do IPVA em data futura ou parcelar. O endpoint <code>/debito/pagamento</code> com variante de agendamento (visível no final da imagem, cortado) cobre este caso. Importante para usuários que querem pagar antes do vencimento ou aproveitar desconto antecipado.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">2ª via CRV</div><span class="ph ph-2">Fase 2</span></div>
+    <div>
+      <div class="fg-desc">Solicitação e pagamento de segunda via do CRV (Certificado de Registro de Veículo) via <code>SEGUNDA_VIA_CRV · VIA RENAVAM</code>. Fluxo conversacional simples — o usuário relata perda ou roubo do documento e o agente inicia o processo.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Transferência de Propriedade</div><span class="ph ph-3">Fase 3</span></div>
+    <div>
+      <div class="fg-desc">Fluxo de compra/venda de veículo usado com transferência: <code>TRANSFERENCIA · VIA RENAVAM</code>. Requer quitação de todos os débitos pendentes antes da transferência + pagamento da taxa de transferência. Fluxo mais complexo — envolve dois titulares.</div>
+      <div class="fg-why"><strong>Complexidade:</strong> dados do vendedor e comprador, validação de bloqueios, sequência regulatória obrigatória.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Débitos Pendentes multi-exercício</div><span class="ph ph-2">Fase 2</span></div>
+    <div>
+      <div class="fg-desc">Veículos com múltiplos anos de IPVA em atraso (IPVA_ANTERIOR + anos anteriores) exigem quitação em sequência com juros e multas por atraso. O <code>DEBITOS_PENDENTES</code> consolida isso, mas o fluxo conversacional de priorização e quitação parcial não está implementado.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Contratação Financiamento</div><span class="ph ph-2">Fase 2</span></div>
+    <div>
+      <div class="fg-desc">O showcase simula o crédito via CaaS mas não efetiva a contratação (LaaS). O usuário sai do chat e precisa ir à agência ou ao app principal para contratar. Fecha a jornada conversacional end-to-end.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Contratação Seguro Auto</div><span class="ph ph-2">Fase 2</span></div>
+    <div>
+      <div class="fg-desc">A proposta de seguro é gerada e exibida mas a contratação (<code>POST /seguros/auto/v1/contratar</code>) não está no emulador de tributos. Fluxo separado do pagamento de tributos mas complementar na jornada VaaS completa.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">PIX ao Dealer</div><span class="ph ph-3">Fase 3</span></div>
+    <div>
+      <div class="fg-desc">Pagamento do valor do veículo ao dealer após quitação de todos os tributos — o split financeiro completo. Arquitetura mapeada (Step Functions saga + PIX API), mas deliberadamente fora do escopo atual.</div>
+    </div>
+  </div>
+
+  <div class="flow-gap">
+    <div class="fg-left"><div class="fg-name">Veículos PJ / Frota</div><span class="ph ph-back">Backlog</span></div>
+    <div>
+      <div class="fg-desc">Empresas com frotas têm necessidades distintas: CNPJ, múltiplos veículos, notas fiscais de débito, relatórios para contabilidade. Requer modelo de dados e fluxo conversacional completamente diferentes da jornada PF.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ INFRAESTRUTURA ══════════ -->
+<div class="sec" id="sec-infra">
+  <div class="sh"><span class="sn">05</span><h2 class="st">Gaps de Infraestrutura AWS</h2></div>
+  <p class="ss">A infraestrutura especificada cobre 40% do que é necessário para um go-live de produção em contexto bancário. Os bloqueadores listados abaixo precisam ser resolvidos antes de qualquer cliente real.</p>
+
+  <h3 class="sub">Bloqueadores de produção</h3>
+  <div class="infra-card" style="border-color:rgba(239,68,68,.25);">
+    <div class="ic-head"><span class="ph ph-bloq">Bloqueador</span><div class="ic-name">Multi-AZ ElastiCache Redis</div></div>
+    <div class="ic-body">O Redis atual é Single-AZ. Falha da AZ = <b>todas as sessões perdidas</b>. Em produção bancária, isso significa re-autenticação forçada de todos os usuários. Requer <code>automatic_failover_enabled = true</code> com pelo menos 1 réplica em AZ diferente.</div>
+  </div>
+  <div class="infra-card" style="border-color:rgba(239,68,68,.25);">
+    <div class="ic-head"><span class="ph ph-bloq">Bloqueador</span><div class="ic-name">CI/CD Pipeline — sem pipeline de deploy</div></div>
+    <div class="ic-body">O showcase usa deploy manual (Working Copy → GitHub). Para produção: <b>GitHub Actions (ou CodePipeline) → build → scan ECR (Inspector) → ECS rolling update</b> com deployment_minimum_healthy_percent=100. Sem pipeline, cada deploy é um risco operacional.</div>
+  </div>
+  <div class="infra-card" style="border-color:rgba(239,68,68,.25);">
+    <div class="ic-head"><span class="ph ph-bloq">Bloqueador</span><div class="ic-name">Step-Up Auth para pagamentos</div></div>
+    <div class="ic-body">O fluxo de pagamento de tributos não tem confirmação biométrica antes de executar o <code>/debito/pagamento</code>. Para conformidade com BACEN e para proteger contra acesso indevido (celular furtado), <b>push notification + biometria no app Bradesco</b> é obrigatório antes de qualquer escrita financeira.</div>
+  </div>
+  <div class="infra-card" style="border-color:rgba(239,68,68,.25);">
+    <div class="ic-head"><span class="ph ph-bloq">Bloqueador</span><div class="ic-name">Rotation Lambda — Secrets Manager</div></div>
+    <div class="ic-body">As credenciais do Axway estão no Secrets Manager mas <b>sem rotação automática implementada</b>. A Lambda de rotação precisa ser desenvolvida e testada. Sem isso, a rotação é manual — risco operacional alto.</div>
+  </div>
+  <div class="infra-card" style="border-color:rgba(239,68,68,.25);">
+    <div class="ic-head"><span class="ph ph-bloq">Bloqueador</span><div class="ic-name">VPC Flow Logs + CloudTrail completo</div></div>
+    <div class="ic-body">VPC Flow Logs não habilitados (exigência BACEN 4.658 Art. 5º). CloudTrail está especificado mas não validado como ativo em todas as regiões. S3 bucket para logs sem <b>Object Lock</b> habilitado (imutabilidade exigida para trilha de auditoria).</div>
+  </div>
+  <div class="infra-card" style="border-color:rgba(239,68,68,.25);">
+    <div class="ic-head"><span class="ph ph-bloq">Bloqueador</span><div class="ic-name">Load Test / Stress Test</div></div>
+    <div class="ic-body">Nenhum teste de carga foi executado. Para produção bancária: <b>simulação de 500 req/s concurrent</b> (equivalente a pico de IPVA vencendo) com SLA p99 &lt; 8s documentado. Sem isso, não há baseline para Auto Scaling e não há evidência de capacidade.</div>
+  </div>
+
+  <h3 class="sub">Gaps Fase 2</h3>
+  <table class="gap-table">
+    <tr><th>Item</th><th>Descrição do gap</th><th>Fase</th></tr>
+    <tr><td>Direct Connect</td><td class="desc">Site-to-Site VPN (POC) → AWS Direct Connect 1Gbps para produção. Reduz latência Axway de 10-15ms para &lt;5ms.</td><td><span class="ph ph-2">Fase 2</span></td></tr>
+    <tr><td>AWS Shield Standard</td><td class="desc">Habilitado por padrão mas não configurado com proteção específica para o ALB. Considerar Shield Advanced para contexto financeiro.</td><td><span class="ph ph-2">Fase 2</span></td></tr>
+    <tr><td>Config + Security Hub</td><td class="desc">Avaliação contínua de conformidade de recursos AWS. Detecta drifts de configuração e não-conformidades com BACEN.</td><td><span class="ph ph-2">Fase 2</span></td></tr>
+    <tr><td>DR — Disaster Recovery</td><td class="desc">RPO e RTO não definidos. Para Banking MCP: RPO &lt; 4h, RTO &lt; 1h. Requer backup cross-region do Redis e do DynamoDB.</td><td><span class="ph ph-2">Fase 2</span></td></tr>
+    <tr><td>Pen Test</td><td class="desc">Teste de penetração na infraestrutura AWS e no MCP Server antes do go-live. Exigência da equipe de segurança Bradesco.</td><td><span class="ph ph-2">Fase 2</span></td></tr>
+    <tr><td>WAF Rules customizadas</td><td class="desc">Hoje: AWS Managed Rules genéricas. Produção: regras customizadas para padrões de ataque específicos do VaaS (ex: enumeração de placas).</td><td><span class="ph ph-2">Fase 2</span></td></tr>
+  </table>
+</div>
+
+<!-- ══════════ KNOWLEDGE BASE ══════════ -->
+<div class="sec" id="sec-kb">
+  <div class="sh"><span class="sn">06</span><h2 class="st">Gaps do Knowledge Base</h2></div>
+  <p class="ss">O Bedrock KB está especificado mas o conteúdo cobre apenas SP. Sem os documentos das outras UFs, o RAG não pode enriquecer respostas para 96% do território nacional.</p>
+
+  <div class="callout risk"><b>Gap mais impactante:</b> as alíquotas de IPVA mudam toda virada de ano por decreto estadual. Sem um pipeline automatizado de atualização do Knowledge Base, o VaaS responderá com informações desatualizadas após janeiro de cada ano — risco regulatório e de imagem.</div>
+
+  <table class="gap-table">
+    <tr><th>Documento KB</th><th>Status atual</th><th>Gap</th><th>Fase</th></tr>
+    <tr>
+      <td>Tabela IPVA SP 2026</td>
+      <td style="color:var(--ok)">✓ Especificado</td>
+      <td class="desc">Conteúdo mockado no showcase. Documento real precisa ser carregado no S3 e sincronizado com o Bedrock KB antes do MVP.</td>
+      <td><span class="ph ph-bloq">Bloqueador</span></td>
+    </tr>
+    <tr>
+      <td>Tabela IPVA — 26 outras UFs</td>
+      <td style="color:var(--risk)">✗ Inexistente</td>
+      <td class="desc">26 documentos a serem criados — um por UF com alíquotas, descontos e calendário de vencimentos. Atualização anual obrigatória (decreto estadual em dezembro/janeiro).</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>Licenciamento / Emplacamento por UF</td>
+      <td style="color:var(--risk)">✗ Só SP especificado</td>
+      <td class="desc">Valores variam de R$150 a R$450 por estado. 26 documentos faltando.</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>Incentivos EV por UF</td>
+      <td style="color:var(--warn)">Parcial — SP documentado</td>
+      <td class="desc">13 UFs têm isenção ou redução de IPVA para veículos elétricos/híbridos. Documento consolidado a criar — muda frequentemente à medida que mais estados aprovam legislação.</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>Normas CMN 4.282 (pagamento)</td>
+      <td style="color:var(--warn)">Especificado</td>
+      <td class="desc">Documento real da norma precisa ser carregado. O agente cita a norma mas sem o texto real no KB pode gerar interpretações imprecisas.</td>
+      <td><span class="ph ph-bloq">Bloqueador</span></td>
+    </tr>
+    <tr>
+      <td>FAQ VaaS</td>
+      <td style="color:var(--risk)">✗ Não criado</td>
+      <td class="desc">Documento com perguntas frequentes da jornada de tributos. Reduz calls de API para perguntas com resposta fixa. Precisa ser criado com base nos atendimentos reais do Bradesco.</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>Pipeline de atualização automática</td>
+      <td style="color:var(--risk)">✗ Não implementado</td>
+      <td class="desc">Lambda acionada por EventBridge (trigger S3 upload) → Bedrock KB sync. Sem isso, atualização é manual — risco alto de informação desatualizada.</td>
+      <td><span class="ph ph-bloq">Bloqueador</span></td>
+    </tr>
+    <tr>
+      <td>Tabelas de multas (pontuação CNH)</td>
+      <td style="color:var(--risk)">✗ Não mapeado</td>
+      <td class="desc">Para enriquecer a resposta sobre multas: valor, pontuação CNH, prazo de recurso. Dado do CTB + Resoluções CONTRAN.</td>
+      <td><span class="ph ph-back">Backlog</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════ MCP TOOLS ══════════ -->
+<div class="sec" id="sec-mcp">
+  <div class="sh"><span class="sn">07</span><h2 class="st">MCP Tools Faltantes</h2></div>
+  <p class="ss">8 tools implementadas no showcase. 10 tools adicionais identificadas como necessárias para a completude do produto.</p>
+
+  <table class="gap-table">
+    <tr><th>Tool (nome proposto)</th><th>Descrição</th><th>API destino</th><th>Fase</th></tr>
+    <tr>
+      <td>consultar_debitos_multiuf</td>
+      <td class="desc">Consulta débitos em múltiplas UFs para o mesmo veículo — necessário para veículos que mudaram de estado</td>
+      <td>/debito/consulta · multi-UF</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>pagar_multa</td>
+      <td class="desc">Pagamento de multas individuais com seleção por autuação. nomeServico=MULTA e MULTA_OUTROS_ESTADOS</td>
+      <td>/debito/pagamento · MULTA</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>consultar_primeiro_registro</td>
+      <td class="desc">Consulta débitos de Primeiro Registro para veículos 0KM. tipoDebito=VEICULOS NOVOS</td>
+      <td>/debito/consulta · PRIMEIRO_REGISTRO</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>pagar_primeiro_registro</td>
+      <td class="desc">Pagamento do Primeiro Registro — inclui emplacamento e CRLV inicial para 0KM</td>
+      <td>/debito/pagamento · PRIMEIRO_REGISTRO</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>agendar_pagamento_ipva</td>
+      <td class="desc">Agendamento do IPVA para data futura. Endpoint de agendamento visível no final da imagem do microserviço</td>
+      <td>/debito/pagamento · Agendamento IPVA_ATUAL</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>solicitar_segunda_via_crv</td>
+      <td class="desc">Solicitação e pagamento de 2ª via do CRV. nomeServico=SEGUNDA_VIA_CRV</td>
+      <td>/debito/consulta + /debito/pagamento · SEGUNDA_VIA_CRV</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>consultar_transferencia</td>
+      <td class="desc">Verifica débitos e pendências para transferência de propriedade. Primeira etapa antes do fluxo de venda</td>
+      <td>/debito/consulta · TRANSFERENCIA</td>
+      <td><span class="ph ph-3">Fase 3</span></td>
+    </tr>
+    <tr>
+      <td>pagar_transferencia</td>
+      <td class="desc">Pagamento da taxa de transferência + quitação de pendências antes de transferir o veículo</td>
+      <td>/debito/pagamento · TRANSFERENCIA</td>
+      <td><span class="ph ph-3">Fase 3</span></td>
+    </tr>
+    <tr>
+      <td>contratar_financiamento</td>
+      <td class="desc">Efetiva a contratação do financiamento após simulação CaaS. Requer assinatura digital e validação LaaS</td>
+      <td>LaaS API · /laas/v1/financiamento/contratar</td>
+      <td><span class="ph ph-2">Fase 2</span></td>
+    </tr>
+    <tr>
+      <td>verificar_recall</td>
+      <td class="desc">Consulta recalls ativos do modelo do veículo via SENATRAN. Informação complementar relevante na jornada de compra</td>
+      <td>SENATRAN API (externa)</td>
+      <td><span class="ph ph-back">Backlog</span></td>
+    </tr>
+  </table>
+</div>
+
+<!-- ══════════ ROADMAP ══════════ -->
+<div class="sec" id="sec-roadmap">
+  <div class="sh"><span class="sn">08</span><h2 class="st">Roadmap de Completude</h2></div>
+  <p class="ss">Distribuição dos gaps em fases de entrega priorizadas por impacto de negócio e viabilidade técnica.</p>
+
+  <div class="roadmap">
+    <div class="rm-phase">
+      <div class="rm-phase-hd" style="background:var(--brad);">
+        <div class="rm-phase-hd-title">MVP · Hoje</div>
+        <div class="rm-phase-hd-sub">Showcase funcional · SP only · Tributos básicos</div>
+      </div>
+      <div class="rm-phase-body">
+        <div class="rm-item" style="border-left-color:var(--ok);">✓ lcbr-srv-debito-veiculo integrado<small>SP: IPVA + Licenciamento + Taxas</small></div>
+        <div class="rm-item" style="border-left-color:var(--ok);">✓ Jornada conversacional app Bradesco<small>Chat VaaS · emulador funcional</small></div>
+        <div class="rm-item" style="border-left-color:var(--ok);">✓ VaaS MCP Server especificado<small>8 tools · Axway integration</small></div>
+        <div class="rm-item" style="border-left-color:var(--ok);">✓ Banking MCP Server especificado<small>Claude + GPT + Gemini</small></div>
+        <div class="rm-item" style="border-left-color:var(--ok);">✓ Arquitetura AWS documentada<small>ECS · Redis · ALB · VPN · Axway</small></div>
+        <div class="rm-item" style="border-left-color:var(--ok);">✓ Step Functions saga especificada<small>pagamento tributos sequencial</small></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;padding:0 4px;color:var(--muted2);font-size:18px;">›</div>
+
+    <div class="rm-phase">
+      <div class="rm-phase-hd" style="background:rgba(239,68,68,.8);">
+        <div class="rm-phase-hd-title">Fase 1.5 · Bloqueadores</div>
+        <div class="rm-phase-hd-sub">Pré-requisitos para qualquer cliente real</div>
+      </div>
+      <div class="rm-phase-body">
+        <div class="rm-item" style="border-left-color:var(--risk);">FIPE API real integrada<small>contrato externo · atualização mensal</small></div>
+        <div class="rm-item" style="border-left-color:var(--risk);">Step-up auth pagamentos<small>push notification + biometria app</small></div>
+        <div class="rm-item" style="border-left-color:var(--risk);">Multi-AZ Redis<small>HA obrigatória em produção bancária</small></div>
+        <div class="rm-item" style="border-left-color:var(--risk);">KB SP com documentos reais<small>alíquotas 2026 · normas CMN 4.282</small></div>
+        <div class="rm-item" style="border-left-color:var(--risk);">CI/CD pipeline completo<small>GitHub Actions → ECR → ECS rolling</small></div>
+        <div class="rm-item" style="border-left-color:var(--risk);">CloudTrail + VPC Flow Logs<small>compliance BACEN 4.658</small></div>
+        <div class="rm-item" style="border-left-color:var(--risk);">DPIA / LGPD formal<small>avaliação de impacto obrigatória</small></div>
+        <div class="rm-item" style="border-left-color:var(--risk);">Pen test infraestrutura<small>antes de qualquer cliente real</small></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;padding:0 4px;color:var(--muted2);font-size:18px;">›</div>
+
+    <div class="rm-phase">
+      <div class="rm-phase-hd" style="background:rgba(245,158,11,.8);">
+        <div class="rm-phase-hd-title">Fase 2 · Escala</div>
+        <div class="rm-phase-hd-sub">Multi-UF · fluxos completos · produção plena</div>
+      </div>
+      <div class="rm-phase-body">
+        <div class="rm-item" style="border-left-color:var(--warn);">Multi-UF — 26 estados + DF<small>KB por UF + lcbr-srv multi-estado</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">Primeiro Registro (0KM)<small>VEICULOS NOVOS · emplacamento</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">Pagamento de Multas<small>MULTA · MULTA_OUTROS_ESTADOS</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">Agendamento IPVA<small>pagamento programado</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">2ª via CRV<small>SEGUNDA_VIA_CRV</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">LaaS contratação<small>financiamento efetivo</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">Seguros contratação<small>apólice intragrupo</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">Direct Connect<small>VPN → DX 1Gbps</small></div>
+        <div class="rm-item" style="border-left-color:var(--warn);">CRLV Digital pós-pagamento<small>emissão automática</small></div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;padding:0 4px;color:var(--muted2);font-size:18px;">›</div>
+
+    <div class="rm-phase">
+      <div class="rm-phase-hd" style="background:rgba(155,135,245,.8);">
+        <div class="rm-phase-hd-title">Fase 3+ · Full Commerce</div>
+        <div class="rm-phase-hd-sub">PIX dealer · Transferência · PJ · Frota</div>
+      </div>
+      <div class="rm-phase-body">
+        <div class="rm-item" style="border-left-color:var(--violet);">PIX dealer — split de pagamento<small>saga completa · backlog mapeado</small></div>
+        <div class="rm-item" style="border-left-color:var(--violet);">Transferência de propriedade<small>TRANSFERENCIA · dois titulares</small></div>
+        <div class="rm-item" style="border-left-color:var(--violet);">Multas federais — RENAINF<small>PRF · ANTT · IBAMA</small></div>
+        <div class="rm-item" style="border-left-color:var(--violet);">Veículos PJ / Frota<small>CNPJ · múltiplos veículos</small></div>
+        <div class="rm-item" style="border-left-color:var(--violet);">Notificações proativas<small>IPVA vencendo em 30 dias</small></div>
+        <div class="rm-item" style="border-left-color:var(--violet);">Recall de veículos<small>SENATRAN API</small></div>
+        <div class="rm-item" style="border-left-color:var(--violet);">Marketplace de dealers<small>catálogo in-app · backlog</small></div>
+        <div class="rm-item" style="border-left-color:var(--violet);">Score ESG veículos EV<small>gamificação ambiental</small></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout ok"><b>Próximos passos concretos para sair do showcase para produção:</b> (1) Contratar a FIPE API externa e integrar ao VaaS MCP Server. (2) Implementar step-up auth com push notification — a spec já está pronta no documento de segurança de sessão. (3) Carregar os documentos reais do KB (alíquotas SP 2026 + normas CMN 4.282) no S3. (4) Subir Multi-AZ no Redis via Terraform. (5) Configurar CI/CD. Esses 5 itens desbloqueiam o primeiro cliente real em SP.</div>
+</div>
+
+</div><!-- /main -->
+<div class="footer">Bradesco · Open Platform · VaaS · Gap Analysis · Julho/2026</div>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('a');});
+  document.querySelectorAll('.nt').forEach(function(b){b.classList.remove('a');});
+  document.getElementById('sec-'+id).classList.add('a');
+  btn.classList.add('a');
+}
+</script>
+</body>
+</html>

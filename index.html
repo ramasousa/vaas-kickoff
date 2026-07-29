@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head><script>
+(function(){
+  if(sessionStorage.getItem('vaas_ok')==='1'){return;}
+  document.documentElement.style.visibility='hidden';
+  document.addEventListener('DOMContentLoaded',function(){
+    document.documentElement.style.visibility='';
+    var d=document;
+    var ov=d.createElement('div');
+    ov.setAttribute('id','vaas-gate');
+    ov.setAttribute('style',
+      'position:fixed;inset:0;z-index:999999;background:#06080d;'+
+      'display:flex;align-items:center;justify-content:center;'+
+      'font-family:DM Sans,sans-serif;');
+    var box=d.createElement('div');
+    box.setAttribute('style','width:340px;text-align:center;');
+    var mark=d.createElement('div');
+    mark.setAttribute('style',
+      'width:48px;height:48px;background:#CC092F;border-radius:12px;'+
+      'display:flex;align-items:center;justify-content:center;'+
+      'font-size:20px;font-weight:800;color:#fff;margin:0 auto 18px;'+
+      'font-family:Syne,sans-serif;');
+    mark.textContent='B';
+    var title=d.createElement('div');
+    title.setAttribute('style',
+      'font-size:24px;font-weight:800;color:#e4e9f4;margin-bottom:6px;'+
+      'font-family:Syne,sans-serif;');
+    title.innerHTML='Bradesco <span style="color:#CC092F">VaaS</span>';
+    var sub=d.createElement('div');
+    sub.setAttribute('style',
+      'font-size:11px;color:#6b7994;margin-bottom:32px;'+
+      'font-family:DM Mono,monospace;letter-spacing:1px;');
+    sub.textContent='ACESSO RESTRITO · USO INTERNO';
+    var pw=d.createElement('input');
+    pw.setAttribute('id','vaas-pw');
+    pw.setAttribute('type','password');
+    pw.setAttribute('placeholder','Senha de acesso');
+    pw.setAttribute('style',
+      'background:#0d1017;border:1.5px solid rgba(255,255,255,.12);'+
+      'color:#e4e9f4;border-radius:10px;padding:14px 18px;font-size:14px;'+
+      'width:100%;outline:none;box-sizing:border-box;display:block;margin-bottom:10px;'+
+      'font-family:DM Sans,sans-serif;');
+    var err=d.createElement('div');
+    err.setAttribute('id','vaas-err');
+    err.setAttribute('style',
+      'color:#ef4444;font-size:12px;min-height:18px;margin-bottom:10px;');
+    var btn=d.createElement('button');
+    btn.setAttribute('id','vaas-btn');
+    btn.setAttribute('style',
+      'background:#CC092F;color:#fff;border:none;border-radius:10px;'+
+      'padding:14px;font-size:14px;font-weight:700;cursor:pointer;'+
+      'width:100%;font-family:DM Sans,sans-serif;');
+    btn.textContent='Entrar →';
+    box.appendChild(mark);box.appendChild(title);box.appendChild(sub);
+    box.appendChild(pw);box.appendChild(err);box.appendChild(btn);
+    ov.appendChild(box);
+    d.body.appendChild(ov);
+    d.body.style.overflow='hidden';
+    pw.focus();
+    function attempt(){
+      if(pw.value==='vaas@bradesco'){
+        sessionStorage.setItem('vaas_ok','1');
+        d.body.style.overflow='';
+        ov.style.opacity='0';
+        ov.style.transition='opacity .25s';
+        setTimeout(function(){ov.remove();},260);
+      } else {
+        err.textContent='Senha incorreta — tente novamente';
+        pw.value='';
+        pw.style.borderColor='#ef4444';
+        setTimeout(function(){pw.style.borderColor='rgba(255,255,255,.12)';},1300);
+        pw.focus();
+      }
+    }
+    btn.addEventListener('click',attempt);
+    pw.addEventListener('keydown',function(e){if(e.key==='Enter'){attempt();}});
+    btn.addEventListener('mouseover',function(){this.style.background='#a00825';});
+    btn.addEventListener('mouseout',function(){this.style.background='#CC092F';});
+    setTimeout(function(){pw.focus();},80);
+  });
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaaS · Pagamento de Tributos · Bradesco Open Platform</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#06080d;--s1:#0d1017;--s2:#131922;
+  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.04);
+  --brad:#CC092F;--brad-d:#900F15;
+  --ok:#2dd4a8;--warn:#f59e0b;
+  --text:#e4e9f4;--muted:#6b7994;--muted2:#2e3a4a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* HEADER */
+.header{padding:0 40px;height:56px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1);background:rgba(6,8,13,.9);backdrop-filter:blur(10px);position:sticky;top:0;z-index:10;}
+.logo{display:flex;align-items:center;gap:9px;}
+.logo-mark{width:30px;height:30px;background:var(--brad);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:13px;color:#fff;}
+.logo-text{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;}
+.logo-text span{color:var(--brad);}
+.header-meta{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);}
+
+/* HERO */
+.hero{padding:64px 40px 52px;border-bottom:1px solid var(--b1);position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;top:-200px;left:-100px;width:600px;height:600px;background:radial-gradient(circle,rgba(204,9,47,.1) 0%,transparent 60%);pointer-events:none;}
+.hero::after{content:'';position:absolute;bottom:-150px;right:-80px;width:500px;height:500px;background:radial-gradient(circle,rgba(78,168,222,.06) 0%,transparent 60%);pointer-events:none;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--brad);margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::after{content:'';flex:1;max-width:80px;height:1px;background:rgba(204,9,47,.35);}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,56px);font-weight:800;line-height:1.08;max-width:780px;margin-bottom:18px;position:relative;}
+.hero h1 em{color:var(--brad);font-style:normal;}
+.hero-sub{font-size:15px;color:var(--muted);max-width:600px;line-height:1.75;font-weight:300;position:relative;margin-bottom:32px;}
+.hero-sub strong{color:var(--text);}
+.hero-chips{display:flex;gap:8px;flex-wrap:wrap;position:relative;}
+.chip{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;padding:4px 12px;border-radius:20px;}
+
+/* STATS */
+.stats{display:flex;border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);}
+.stat{flex:1;padding:22px 28px;border-right:1px solid var(--b1);}
+.stat:last-child{border-right:none;}
+.stat-n{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;margin-bottom:4px;}
+.stat-l{font-size:11.5px;color:var(--muted);}
+
+/* CARDS */
+.content{max-width:1100px;margin:0 auto;padding:52px 40px 100px;}
+.section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+.section-label::after{content:'';flex:1;height:1px;background:var(--b1);}
+
+.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:52px;}
+@media(max-width:760px){.cards{grid-template-columns:1fr;}}
+
+.doc-card{background:var(--s1);border:1.5px solid var(--b1);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px;transition:all .2s;cursor:pointer;position:relative;overflow:hidden;}
+.doc-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(204,9,47,.04) 0%,transparent 60%);opacity:0;transition:opacity .2s;}
+.doc-card:hover{border-color:rgba(204,9,47,.45);transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.35);}
+.doc-card:hover::before{opacity:1;}
+.doc-card.featured{border-color:rgba(204,9,47,.3);}
+
+.dc-tag{display:inline-flex;align-items:center;gap:6px;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:4px 11px;border-radius:12px;width:fit-content;font-family:'DM Mono',monospace;}
+.dc-num{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:#fff;flex-shrink:0;}
+.dc-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;line-height:1.2;}
+.dc-desc{font-size:13px;color:var(--muted);line-height:1.65;flex:1;}
+.dc-desc b{color:#c5ccd8;}
+.dc-bullets{display:flex;flex-direction:column;gap:5px;}
+.dc-bullet{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--muted);}
+.dc-bullet::before{content:'→';color:var(--brad);flex-shrink:0;margin-top:1px;}
+.dc-cta{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--b1);margin-top:4px;}
+.dc-cta-text{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--muted);}
+.dc-cta-arrow{background:var(--brad);color:#fff;border-radius:8px;padding:8px 16px;font-size:12.5px;font-weight:700;transition:background .15s;}
+.doc-card:hover .dc-cta-arrow{background:var(--brad-d);}
+
+/* CONTEXT STRIP */
+.context-strip{background:var(--s1);border:1px solid var(--b1);border-radius:12px;padding:20px 24px;margin-bottom:48px;display:flex;align-items:flex-start;gap:16px;}
+.cs-ico{font-size:24px;flex-shrink:0;margin-top:2px;}
+.cs-body{}
+.cs-title{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:6px;}
+.cs-text{font-size:13px;color:var(--muted);line-height:1.65;}
+.cs-text strong{color:var(--text);}
+
+/* FOOTER */
+.footer{border-top:1px solid var(--b1);padding:20px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+.footer-brand{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;}
+.footer-brand span{color:var(--brad);}
+.footer-note{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted2);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+    <div class="logo-mark">B</div>
+    <div class="logo-text">Bradesco <span>VaaS</span></div>
+  </div>
+  <div class="header-meta">Pagamento de Tributos Veiculares · Open Platform</div>
+</div>
+
+<div class="hero">
+  <div class="hero-eyebrow">Open Platform · APIs, BaaS &amp; Embedded Finance</div>
+  <h1>VaaS — <em>Tributos</em><br>conversacionais<br>no app Bradesco</h1>
+  <p class="hero-sub">
+    Pagamento de IPVA, licenciamento e taxas DETRAN diretamente pelo chat do app Bradesco —
+    orquestrado por IA, usando as APIs reais do <strong>lcbr-srv-debito-veiculo</strong>,
+    sem sair do canal bancário.
+  </p>
+  <div class="hero-chips">
+    <span class="chip" style="background:rgba(204,9,47,.12);color:var(--brad);">lcbr-srv-debito-veiculo</span>
+    <span class="chip" style="background:rgba(45,212,168,.1);color:var(--ok);">Bridge · Bedrock Agent</span>
+    <span class="chip" style="background:rgba(155,135,245,.1);color:#9b87f5;">VaaS MCP Server</span>
+    <span class="chip" style="background:rgba(255,153,0,.1);color:#ff9900;">AWS · sa-east-1</span>
+    <span class="chip" style="background:rgba(245,158,11,.1);color:var(--warn);">MVP + Roadmap</span>
+  </div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="stat-n" style="color:var(--brad)">20+</div><div class="stat-l">Endpoints mapeados<br>lcbr-srv-debito-veiculo</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--ok)">3</div><div class="stat-l">Modos de demonstração<br>MVP · Produção · Backlog</div></div>
+  <div class="stat"><div class="stat-n" style="color:#9b87f5)">27</div><div class="stat-l">UFs no roadmap<br>(1 no MVP · 26 na Fase 2)</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--warn)">34%</div><div class="stat-l">Completude atual<br>rumo à visão completa</div></div>
+</div>
+
+<div class="content">
+
+  <div class="context-strip">
+    <div class="cs-ico">🎯</div>
+    <div class="cs-body">
+      <div class="cs-title">Contexto desta apresentação</div>
+      <div class="cs-text">
+        O VaaS nasceu como uma tese de Full Commerce veicular. Nesta versão, focamos no <strong>ganho imediato de maior impacto</strong> — pagamento de tributos de forma conversacional dentro do próprio app Bradesco, sem redirecionar o cliente para outros canais.<br><br>
+        Os materiais abaixo cobrem a demonstração interativa (com emulador do app + arquitetura AWS em tempo real) e o mapeamento completo de gaps para atingir a produção plena.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Materiais da reunião</div>
+
+  <div class="cards">
+
+    <a class="doc-card featured" href="vaas-tributos-emulator.html">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">
+        <div class="dc-num" style="background:var(--brad);">01</div>
+        <span class="dc-tag" style="background:rgba(204,9,47,.12);color:var(--brad);">Demo interativa · App + AWS</span>
+      </div>
+      <div class="dc-title">Emulador do App Bradesco<br>+ Arquitetura AWS</div>
+      <div class="dc-desc">Protótipo navegável com o app Bradesco à esquerda e a <b>arquitetura AWS iluminando em tempo real</b> conforme a conversa avança. Cada endpoint do <b>lcbr-srv-debito-veiculo</b> acende no momento exato em que é chamado.</div>
+      <div class="dc-bullets">
+        <div class="dc-bullet">3 modos: MVP (IPVA + Licenciamento + Taxas), Produção (todos os débitos) e Backlog</div>
+        <div class="dc-bullet">14 passos do fluxo: abertura do chat → consulta → seleção → saga de pagamento → comprovante</div>
+        <div class="dc-bullet">Endpoints reais: /veiculo/lista-positiva, /debito/consulta, /debito/pagamento com nomeServico</div>
+        <div class="dc-bullet">Step Functions, DynamoDB (idempotência), Axway e Bridge/Bedrock visíveis no diagrama</div>
+      </div>
+      <div class="dc-cta">
+        <span class="dc-cta-text">vaas-tributos-emulator.html</span>
+        <span class="dc-cta-arrow">Abrir demo →</span>
+      </div>
+    </a>
+
+    <a class="doc-card" href="vaas-gap-analysis.html">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">
+        <div class="dc-num" style="background:var(--warn);color:#000;">02</div>
+        <span class="dc-tag" style="background:rgba(245,158,11,.12);color:var(--warn);">Gap Analysis · Roadmap</span>
+      </div>
+      <div class="dc-title">Completude do Showcase<br>e Roadmap de Gaps</div>
+      <div class="dc-desc">Mapeamento completo da distância entre o estado atual (34% completo) e a visão de produção plena. <b>12 blockers críticos</b>, 24 gaps de Fase 2 e 18 itens de backlog classificados por severidade.</div>
+      <div class="dc-bullets">
+        <div class="dc-bullet">Todos os endpoints do lcbr-srv-debito-veiculo — implementados vs. faltantes</div>
+        <div class="dc-bullet">Cobertura de UFs: SP coberto, 26 estados + DF no roadmap Fase 2</div>
+        <div class="dc-bullet">10 fluxos de negócio fora do MVP (multas, primeiro registro, transferência, agendamento IPVA…)</div>
+        <div class="dc-bullet">Infraestrutura, Knowledge Base, MCP Tools e compliance BACEN/LGPD</div>
+      </div>
+      <div class="dc-cta">
+        <span class="dc-cta-text">vaas-gap-analysis.html</span>
+        <span class="dc-cta-arrow">Ver análise →</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="context-strip" style="border-color:rgba(45,212,168,.2);background:rgba(45,212,168,.04);">
+    <div class="cs-ico">💡</div>
+    <div class="cs-body">
+      <div class="cs-title">Como usar na reunião</div>
+      <div class="cs-text">
+        <strong>Demo (material 01)</strong> — comece pelo botão <strong>▶ Play</strong> para rodar o fluxo automaticamente, ou use <strong>Próximo ▶</strong> para avançar passo a passo durante a apresentação. Alterne entre MVP e Produção para mostrar a diferença de escopo. Clique no botão <em>Débitos de Veículo</em> no app para iniciar manualmente.<br><br>
+        <strong>Gap Analysis (material 02)</strong> — use a seção <strong>Roadmap</strong> para posicionar o que está pronto vs. o que vem nas próximas fases. A seção <strong>Cobertura UFs</strong> é o argumento visual mais forte para justificar a expansão multi-estado.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="footer-brand">Bradesco <span>VaaS</span> · Open Platform · APIs, BaaS &amp; Embedded Finance</div>
+  <div class="footer-note">Uso interno · Confidencial · Julho/2026</div>
+</div>
+
+</body>
+</html>
