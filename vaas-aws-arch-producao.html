@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VaaS · Arquitetura AWS · Produção · sa-east-1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#07090e;--s1:#0d1017;--s2:#131922;--s3:#1c2535;
+  --b1:rgba(255,255,255,.07);--b2:rgba(255,255,255,.04);--b3:rgba(255,255,255,.025);
+  --brad:#CC092F;--brad-g:rgba(204,9,47,.1);
+  --ok:#2dd4a8;--ok-g:rgba(45,212,168,.1);
+  --warn:#f59e0b;--warn-g:rgba(245,158,11,.1);
+  --risk:#ef4444;--risk-g:rgba(239,68,68,.1);
+  --blue:#4ea8de;--blue-g:rgba(78,168,222,.1);
+  --violet:#9b87f5;--violet-g:rgba(155,135,245,.1);
+  --orange:#ff7a45;--orange-g:rgba(255,122,69,.1);
+  --aws:#ff9900;--aws-g:rgba(255,153,0,.1);
+  --text:#e4e9f4;--muted:#6b7994;--muted2:#2e3a4a;
+  --az-a:#1a2d4a;--az-b:#1a2a3d;--az-c:#19293a;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+
+.hero{padding:44px 40px 32px;border-bottom:1px solid var(--b1);}
+.hero-tag{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--aws);margin-bottom:12px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(20px,3vw,36px);font-weight:800;line-height:1.1;margin-bottom:10px;}
+.hero h1 em{color:var(--aws);font-style:normal;}
+.hero-sub{font-size:13.5px;color:var(--muted);line-height:1.65;max-width:800px;margin-bottom:20px;}
+.hero-chips{display:flex;gap:7px;flex-wrap:wrap;}
+.chip{font-family:'DM Mono',monospace;font-size:9.5px;font-weight:700;padding:3px 10px;border-radius:16px;}
+
+.kpi-strip{display:flex;border-top:1px solid var(--b1);border-bottom:1px solid var(--b1);}
+.kpi{flex:1;padding:16px 20px;border-right:1px solid var(--b1);}
+.kpi:last-child{border-right:none;}
+.kpi-n{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:2px;}
+.kpi-l{font-size:10.5px;color:var(--muted);}
+
+/* NAV */
+.nav{display:flex;gap:2px;padding:0 40px;border-bottom:1px solid var(--b1);background:var(--bg);position:sticky;top:0;z-index:30;overflow-x:auto;}
+.nt{background:none;border:none;color:var(--muted);font-family:'DM Sans';font-size:11.5px;font-weight:500;padding:12px 10px;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;}
+.nt:hover{color:var(--text);}
+.nt.a{color:var(--text);border-bottom-color:var(--aws);}
+
+.main{max-width:1280px;margin:0 auto;padding:28px 40px 100px;}
+.sec{display:none;animation:fi .15s ease;}
+.sec.a{display:block;}
+@keyframes fi{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+
+.sh{display:flex;align-items:baseline;gap:10px;margin-bottom:5px;}
+.sn{font-family:'DM Mono',monospace;font-size:11px;color:var(--aws);}
+.st{font-family:'Syne',sans-serif;font-size:19px;font-weight:800;}
+.ss{color:var(--muted);font-size:13px;line-height:1.65;max-width:760px;margin-bottom:24px;}
+h3.sub{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin:26px 0 10px;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-bottom:12px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;margin-bottom:12px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:12px;}
+@media(max-width:900px){.g2,.g3,.g4{grid-template-columns:1fr 1fr;}}
+
+.card{background:var(--s1);border:1px solid var(--b1);border-radius:11px;padding:14px;}
+.card-t{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:6px;}
+.card-b{font-size:12px;color:var(--muted);line-height:1.6;}
+.card-b b{color:#c5ccd8;}
+code{font-family:'DM Mono',monospace;font-size:11px;background:var(--s2);padding:1px 5px;border-radius:4px;color:var(--ok);}
+
+.callout{border-left:3px solid var(--aws);background:var(--s1);border-radius:0 9px 9px 0;padding:12px 16px;font-size:12.5px;color:#c5ccd8;line-height:1.65;margin:12px 0;}
+.callout b{color:var(--text);}
+.callout.ok{border-left-color:var(--ok);}
+.callout.risk{border-left-color:var(--risk);}
+.callout.violet{border-left-color:var(--violet);}
+
+pre.code{font-family:'DM Mono',monospace;font-size:11px;background:var(--s1);border:1px solid var(--b1);border-radius:9px;padding:16px;line-height:1.8;overflow-x:auto;white-space:pre;margin:10px 0;}
+pre.code .kw{color:var(--blue);}
+pre.code .str{color:var(--ok);}
+pre.code .cm{color:var(--muted2);}
+pre.code .cl{color:var(--orange);}
+pre.code .ok{color:var(--ok);}
+pre.code .w{color:var(--warn);}
+
+table.t{width:100%;border-collapse:collapse;margin:8px 0 20px;font-size:12px;}
+table.t th{text-align:left;font-family:'DM Mono';font-size:9px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--b1);}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--b2);color:#c5ccd8;vertical-align:top;}
+table.t tr:last-child td{border-bottom:none;}
+table.t td:first-child{font-family:'DM Mono',monospace;font-size:11px;color:var(--ok);}
+
+/* ════════════════════════════════
+   MAIN ARCHITECTURE DIAGRAM
+════════════════════════════════ */
+.arch-canvas{margin:0 0 32px;overflow-x:auto;}
+.arch-canvas-inner{min-width:900px;}
+
+/* EXTERNAL LAYER */
+.ext-layer{display:flex;gap:8px;justify-content:center;align-items:center;padding:12px 0 8px;flex-wrap:wrap;}
+.ext-node{border:1.5px solid;border-radius:9px;padding:7px 14px;display:flex;align-items:center;gap:7px;font-size:11px;}
+.ext-arr{color:var(--muted2);font-size:11px;}
+
+/* VPC BOX */
+.vpc-box{border:2px solid rgba(78,168,222,.3);border-radius:14px;background:rgba(78,168,222,.025);padding:14px;position:relative;margin:0 0 10px;}
+.vpc-label{position:absolute;top:-10px;left:16px;background:var(--bg);padding:0 8px;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--blue);letter-spacing:1px;text-transform:uppercase;}
+.vpc-cidr{position:absolute;top:-10px;right:16px;background:var(--bg);padding:0 8px;font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);}
+
+/* SUBNET ROWS */
+.subnet-row{display:grid;grid-template-columns:80px repeat(3,1fr);gap:0;margin-bottom:8px;}
+.subnet-tag{display:flex;align-items:center;justify-content:flex-end;padding-right:10px;}
+.subnet-tag-inner{writing-mode:horizontal-tb;font-family:'DM Mono',monospace;font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);}
+
+/* AZ COLUMNS */
+.az-cell{border:1px solid;border-radius:8px;padding:8px;margin:2px;min-height:60px;display:flex;flex-direction:column;gap:5px;}
+.az-cell.pub{border-color:rgba(255,153,0,.25);background:rgba(255,153,0,.04);}
+.az-cell.prv-compute{border-color:rgba(155,135,245,.2);background:rgba(155,135,245,.03);}
+.az-cell.prv-data{border-color:rgba(239,68,68,.2);background:rgba(239,68,68,.03);}
+.az-cell.prv-intra{border-color:rgba(245,158,11,.2);background:rgba(245,158,11,.03);}
+
+/* SUBNET HEADER ROW */
+.subnet-hdr{display:grid;grid-template-columns:80px repeat(3,1fr);gap:0;margin-bottom:4px;}
+.az-hdr{text-align:center;font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--muted);padding:4px;text-transform:uppercase;letter-spacing:.5px;}
+.cidr-sub{font-size:7.5px;color:var(--muted2);margin-top:1px;}
+
+/* COMPONENT NODES inside cells */
+.cn{border-radius:6px;padding:5px 8px;font-size:10px;display:flex;align-items:center;gap:5px;border:1px solid;}
+.cn-ico{font-size:12px;flex-shrink:0;}
+.cn-info{}
+.cn-name{font-family:'Syne',sans-serif;font-size:10px;font-weight:700;white-space:nowrap;}
+.cn-sub{font-size:8px;font-family:'DM Mono',monospace;color:var(--muted);margin-top:1px;}
+.cn-aws{border-color:rgba(255,153,0,.3);background:rgba(255,153,0,.08);}
+.cn-aws .cn-name{color:var(--aws);}
+.cn-ecs{border-color:rgba(155,135,245,.3);background:rgba(155,135,245,.08);}
+.cn-ecs .cn-name{color:var(--violet);}
+.cn-redis{border-color:rgba(239,68,68,.3);background:rgba(239,68,68,.08);}
+.cn-redis .cn-name{color:#fca5a5;}
+.cn-tgw{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.08);}
+.cn-tgw .cn-name{color:var(--warn);}
+.cn-ep{border-color:rgba(45,212,168,.2);background:rgba(45,212,168,.06);}
+.cn-ep .cn-name{color:var(--ok);}
+
+/* SHARED SERVICES ROW */
+.shared-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;padding:10px 0 4px;}
+.shared-node{border:1.5px solid var(--b1);border-radius:8px;padding:6px 10px;font-size:10.5px;display:flex;align-items:center;gap:6px;background:var(--s1);}
+.shared-node .sn-ico{font-size:13px;}
+.shared-node .sn-name{font-family:'Syne',sans-serif;font-size:10.5px;font-weight:700;color:var(--aws);}
+.shared-node .sn-sub{font-size:8px;color:var(--muted);font-family:'DM Mono',monospace;}
+
+/* CONNECTIVITY LAYER */
+.conn-layer{display:flex;gap:10px;align-items:stretch;margin-top:10px;}
+.conn-box{border:1.5px solid;border-radius:10px;padding:10px 14px;flex:1;}
+.conn-box-title{font-family:'Syne',sans-serif;font-size:11.5px;font-weight:700;margin-bottom:6px;}
+.conn-box ul{list-style:none;display:flex;flex-direction:column;gap:3px;}
+.conn-box li{font-size:10.5px;color:var(--muted);padding-left:10px;position:relative;}
+.conn-box li::before{content:'·';position:absolute;left:0;color:var(--aws);}
+
+/* ARROWS between layers */
+.layer-arr{text-align:center;color:var(--muted2);font-size:10.5px;padding:3px 0;font-family:'DM Mono',monospace;}
+
+/* VPC ENDPOINTS STRIP */
+.ep-strip{background:rgba(45,212,168,.04);border:1px solid rgba(45,212,168,.2);border-radius:8px;padding:8px 14px;margin:6px 0;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ep-strip-label{font-family:'DM Mono',monospace;font-size:9px;font-weight:700;color:var(--ok);white-space:nowrap;}
+.ep-tag{font-family:'DM Mono',monospace;font-size:9px;background:rgba(45,212,168,.1);color:var(--ok);padding:2px 7px;border-radius:6px;}
+
+/* PHASE TAG */
+.ph{display:inline-flex;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:2px 8px;border-radius:10px;font-family:'DM Mono',monospace;}
+.ph-ok{background:var(--ok-g);color:var(--ok);}
+.ph-warn{background:var(--warn-g);color:var(--warn);}
+.ph-aws{background:var(--aws-g);color:var(--aws);}
+
+.footer{text-align:center;padding:24px 0 10px;font-size:11px;color:var(--muted2);border-top:1px solid var(--b1);margin-top:40px;}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">Arquitetura de Referência · Produção · sa-east-1 · Alta Volumetria</div>
+  <h1>VaaS Tributos · AWS <em>Produção</em><br>Multi-AZ · São Paulo</h1>
+  <p class="hero-sub">Arquitetura completa para cenário de alta volumetria — pico de pagamento de IPVA (março/SP): até 500 TPS. Multi-AZ em sa-east-1a/b/c, Redis Cluster Mode, ECS Auto Scaling 3→20 tasks, Direct Connect 1Gbps para o Axway, todos os VPC Endpoints habilitados.</p>
+  <div class="hero-chips">
+    <span class="chip" style="background:var(--aws-g);color:var(--aws);">sa-east-1 · 3 AZs</span>
+    <span class="chip" style="background:var(--blue-g);color:var(--blue);">VPC 10.20.0.0/16</span>
+    <span class="chip" style="background:var(--violet-g);color:var(--violet);">ECS Fargate · Auto Scaling</span>
+    <span class="chip" style="background:var(--risk-g);color:#fca5a5)">Redis Cluster · 9 nodes</span>
+    <span class="chip" style="background:var(--warn-g);color:var(--warn);">Direct Connect 1Gbps</span>
+    <span class="chip" style="background:var(--ok-g);color:var(--ok);">500 TPS · p99 &lt; 4s</span>
+  </div>
+</div>
+
+<div class="kpi-strip">
+  <div class="kpi"><div class="kpi-n" style="color:var(--ok)">500</div><div class="kpi-l">TPS peak<br>(pico IPVA março/SP)</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--violet)">3→20</div><div class="kpi-l">ECS tasks<br>Auto Scaling</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:#fca5a5">9</div><div class="kpi-l">Redis nodes<br>Cluster Mode · 3 shards</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--aws)">3</div><div class="kpi-l">AZs ativas<br>sa-east-1a/b/c</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--warn)">1Gbps</div><div class="kpi-l">Direct Connect<br>Axway on-premises</div></div>
+  <div class="kpi"><div class="kpi-n" style="color:var(--blue)">&lt; 4s</div><div class="kpi-l">Latência p99<br>jornada completa</div></div>
+</div>
+
+<nav class="nav">
+  <button class="nt a" onclick="show('diagrama',this)">Diagrama</button>
+  <button class="nt" onclick="show('rede',this)">VPC & Rede</button>
+  <button class="nt" onclick="show('compute',this)">Compute & Scaling</button>
+  <button class="nt" onclick="show('data',this)">Data Layer</button>
+  <button class="nt" onclick="show('connect',this)">Conectividade</button>
+  <button class="nt" onclick="show('seguranca',this)">Segurança</button>
+  <button class="nt" onclick="show('obs',this)">Observabilidade</button>
+  <button class="nt" onclick="show('dr',this)">DR & Backup</button>
+  <button class="nt" onclick="show('custo',this)">Custo</button>
+</nav>
+
+<div class="main">
+
+<!-- ══════════════════════════════════════
+     DIAGRAMA PRINCIPAL
+══════════════════════════════════════ -->
+<div class="sec a" id="sec-diagrama">
+  <div class="sh"><span class="sn">01</span><h2 class="st">Diagrama de Arquitetura · Produção</h2></div>
+  <p class="ss">Layout físico com subnets por camada e 3 AZs. Cada coluna é uma zona de disponibilidade independente — falha de uma AZ não afeta o serviço.</p>
+
+  <div class="arch-canvas">
+  <div class="arch-canvas-inner">
+
+    <!-- INTERNET + EDGE -->
+    <div class="ext-layer">
+      <div class="ext-node" style="border-color:rgba(255,255,255,.15);"><span>🌐</span><span>Internet</span></div>
+      <div class="ext-arr">→</div>
+      <div class="ext-node" style="border-color:rgba(78,168,222,.3);color:var(--blue);"><span>🌍</span><span style="font-family:'Syne',sans-serif;font-weight:700;">Route 53</span><span style="font-size:9px;color:var(--muted)">Health Check · Failover</span></div>
+      <div class="ext-arr">→</div>
+      <div class="ext-node" style="border-color:rgba(239,68,68,.3);color:var(--risk);"><span>🛡️</span><span style="font-family:'Syne',sans-serif;font-weight:700;">WAF v2</span><span style="font-size:9px;color:var(--muted)">Rate 500/min · Geo BR · Rules</span></div>
+      <div class="ext-arr">→</div>
+      <div class="ext-node" style="border-color:rgba(255,153,0,.4);color:var(--aws);"><span>⚖️</span><span style="font-family:'Syne',sans-serif;font-weight:700;">ALB</span><span style="font-size:9px;color:var(--muted)">Internet-facing · Multi-AZ · TLS 1.3 · ACM</span></div>
+    </div>
+
+    <div class="layer-arr">↓ Target Groups → ECS Tasks (weighted round-robin)</div>
+
+    <!-- VPC -->
+    <div class="vpc-box">
+      <div class="vpc-label">VPC · sa-east-1</div>
+      <div class="vpc-cidr">10.20.0.0/16</div>
+
+      <!-- AZ HEADERS -->
+      <div class="subnet-hdr">
+        <div></div>
+        <div class="az-hdr" style="color:#4ea8de;">sa-east-1<b>a</b><div class="cidr-sub">AZ primária</div></div>
+        <div class="az-hdr" style="color:#2dd4a8;">sa-east-1<b>b</b><div class="cidr-sub">AZ secundária</div></div>
+        <div class="az-hdr" style="color:#9b87f5;">sa-east-1<b>c</b><div class="cidr-sub">AZ terciária</div></div>
+      </div>
+
+      <!-- PUBLIC SUBNETS -->
+      <div class="subnet-row">
+        <div class="subnet-tag"><div class="subnet-tag-inner" style="color:var(--aws);">PUBLIC</div></div>
+        <div class="az-cell pub">
+          <div class="cn cn-aws"><div class="cn-ico">🔀</div><div class="cn-info"><div class="cn-name">NAT Gateway</div><div class="cn-sub">10.20.0.0/24 · EIP</div></div></div>
+          <div class="cn cn-aws"><div class="cn-ico">⚖️</div><div class="cn-info"><div class="cn-name">ALB node</div><div class="cn-sub">Cross-zone enabled</div></div></div>
+        </div>
+        <div class="az-cell pub">
+          <div class="cn cn-aws"><div class="cn-ico">🔀</div><div class="cn-info"><div class="cn-name">NAT Gateway</div><div class="cn-sub">10.20.1.0/24 · EIP</div></div></div>
+          <div class="cn cn-aws"><div class="cn-ico">⚖️</div><div class="cn-info"><div class="cn-name">ALB node</div><div class="cn-sub">Cross-zone enabled</div></div></div>
+        </div>
+        <div class="az-cell pub">
+          <div class="cn cn-aws"><div class="cn-ico">🔀</div><div class="cn-info"><div class="cn-name">NAT Gateway</div><div class="cn-sub">10.20.2.0/24 · EIP</div></div></div>
+          <div class="cn cn-aws"><div class="cn-ico">⚖️</div><div class="cn-info"><div class="cn-name">ALB node</div><div class="cn-sub">Cross-zone enabled</div></div></div>
+        </div>
+      </div>
+
+      <!-- PRIVATE COMPUTE -->
+      <div class="subnet-row">
+        <div class="subnet-tag"><div class="subnet-tag-inner" style="color:var(--violet);">COMPUTE</div></div>
+        <div class="az-cell prv-compute">
+          <div class="cn cn-ecs"><div class="cn-ico">📦</div><div class="cn-info"><div class="cn-name">ECS Fargate</div><div class="cn-sub">10.20.10.0/24 · min 1 task</div></div></div>
+          <div class="cn cn-ecs" style="opacity:.6;border-style:dashed;"><div class="cn-ico">📦</div><div class="cn-info"><div class="cn-name">ECS (scaled)</div><div class="cn-sub">até +6 tasks on peak</div></div></div>
+        </div>
+        <div class="az-cell prv-compute">
+          <div class="cn cn-ecs"><div class="cn-ico">📦</div><div class="cn-info"><div class="cn-name">ECS Fargate</div><div class="cn-sub">10.20.11.0/24 · min 1 task</div></div></div>
+          <div class="cn cn-ecs" style="opacity:.6;border-style:dashed;"><div class="cn-ico">📦</div><div class="cn-info"><div class="cn-name">ECS (scaled)</div><div class="cn-sub">até +6 tasks on peak</div></div></div>
+        </div>
+        <div class="az-cell prv-compute">
+          <div class="cn cn-ecs"><div class="cn-ico">📦</div><div class="cn-info"><div class="cn-name">ECS Fargate</div><div class="cn-sub">10.20.12.0/24 · min 1 task</div></div></div>
+          <div class="cn cn-ecs" style="opacity:.6;border-style:dashed;"><div class="cn-ico">📦</div><div class="cn-info"><div class="cn-name">ECS (scaled)</div><div class="cn-sub">até +6 tasks on peak</div></div></div>
+        </div>
+      </div>
+
+      <!-- PRIVATE DATA -->
+      <div class="subnet-row">
+        <div class="subnet-tag"><div class="subnet-tag-inner" style="color:#fca5a5;">DATA</div></div>
+        <div class="az-cell prv-data">
+          <div class="cn cn-redis"><div class="cn-ico">⚡</div><div class="cn-info"><div class="cn-name">Redis Primary</div><div class="cn-sub">10.20.20.0/24 · Shard 1</div></div></div>
+          <div class="cn cn-redis" style="opacity:.75;"><div class="cn-ico">⚡</div><div class="cn-info"><div class="cn-name">Redis Replica</div><div class="cn-sub">Shard 2 replica</div></div></div>
+        </div>
+        <div class="az-cell prv-data">
+          <div class="cn cn-redis"><div class="cn-ico">⚡</div><div class="cn-info"><div class="cn-name">Redis Primary</div><div class="cn-sub">10.20.21.0/24 · Shard 2</div></div></div>
+          <div class="cn cn-redis" style="opacity:.75;"><div class="cn-ico">⚡</div><div class="cn-info"><div class="cn-name">Redis Replica</div><div class="cn-sub">Shard 3 replica</div></div></div>
+        </div>
+        <div class="az-cell prv-data">
+          <div class="cn cn-redis"><div class="cn-ico">⚡</div><div class="cn-info"><div class="cn-name">Redis Primary</div><div class="cn-sub">10.20.22.0/24 · Shard 3</div></div></div>
+          <div class="cn cn-redis" style="opacity:.75;"><div class="cn-ico">⚡</div><div class="cn-info"><div class="cn-name">Redis Replica</div><div class="cn-sub">Shard 1 replica</div></div></div>
+        </div>
+      </div>
+
+      <!-- PRIVATE INTRA / TGW -->
+      <div class="subnet-row">
+        <div class="subnet-tag"><div class="subnet-tag-inner" style="color:var(--warn);">INTRA</div></div>
+        <div class="az-cell prv-intra">
+          <div class="cn cn-tgw"><div class="cn-ico">🔗</div><div class="cn-info"><div class="cn-name">TGW Attachment</div><div class="cn-sub">10.20.30.0/24</div></div></div>
+        </div>
+        <div class="az-cell prv-intra">
+          <div class="cn cn-tgw"><div class="cn-ico">🔗</div><div class="cn-info"><div class="cn-name">TGW Attachment</div><div class="cn-sub">10.20.31.0/24</div></div></div>
+        </div>
+        <div class="az-cell prv-intra">
+          <div class="cn cn-tgw"><div class="cn-ico">🔗</div><div class="cn-info"><div class="cn-name">TGW Attachment</div><div class="cn-sub">10.20.32.0/24</div></div></div>
+        </div>
+      </div>
+
+      <!-- VPC ENDPOINTS -->
+      <div class="ep-strip">
+        <div class="ep-strip-label">🔒 VPC Endpoints (PrivateLink) — tráfego AWS sem passar pelo NAT</div>
+        <span class="ep-tag">ECR API</span>
+        <span class="ep-tag">ECR DKR</span>
+        <span class="ep-tag">Secrets Manager</span>
+        <span class="ep-tag">CloudWatch Logs</span>
+        <span class="ep-tag">CloudWatch Monitoring</span>
+        <span class="ep-tag">X-Ray</span>
+        <span class="ep-tag">S3 (Gateway)</span>
+        <span class="ep-tag">DynamoDB (Gateway)</span>
+        <span class="ep-tag">Bedrock Runtime</span>
+        <span class="ep-tag">Step Functions</span>
+        <span class="ep-tag">KMS</span>
+      </div>
+
+    </div><!-- /vpc-box -->
+
+    <!-- SHARED AWS SERVICES -->
+    <div class="layer-arr">↓ Serviços regionais AWS (sem dependência de AZ específica)</div>
+    <div class="shared-row">
+      <div class="shared-node"><span class="sn-ico">📦</span><div><div class="sn-name">DynamoDB</div><div class="sn-sub">On-demand · PITR · TTL</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🔑</span><div><div class="sn-name">Secrets Manager</div><div class="sn-sub">Rotation Lambda · KMS</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🗝️</span><div><div class="sn-name">KMS CMK</div><div class="sn-sub">vaas-tributos-cmk</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🗂️</span><div><div class="sn-name">ECR Private</div><div class="sn-sub">Immutable tags · Inspector</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🔄</span><div><div class="sn-name">Step Functions</div><div class="sn-sub">Express · Saga pagamento</div></div></div>
+      <div class="shared-node"><span class="sn-ico">📚</span><div><div class="sn-name">Bedrock KB</div><div class="sn-sub">OpenSearch SL · RAG</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🤖</span><div><div class="sn-name">Bedrock Agent</div><div class="sn-sub">Bridge · Claude Sonnet</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🪣</span><div><div class="sn-name">S3</div><div class="sn-sub">KB docs · Logs · Backup</div></div></div>
+    </div>
+    <div class="shared-row">
+      <div class="shared-node"><span class="sn-ico">📊</span><div><div class="sn-name">CloudWatch</div><div class="sn-sub">Logs · Metrics · Alarms · Dashboard</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🔭</span><div><div class="sn-name">X-Ray</div><div class="sn-sub">Trace distribuído · Service Map</div></div></div>
+      <div class="shared-node"><span class="sn-ico">📋</span><div><div class="sn-name">CloudTrail</div><div class="sn-sub">Multi-region · S3 Object Lock</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🔍</span><div><div class="sn-name">GuardDuty</div><div class="sn-sub">Threat detection</div></div></div>
+      <div class="shared-node"><span class="sn-ico">⚙️</span><div><div class="sn-name">Config</div><div class="sn-sub">Compliance rules</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🛡️</span><div><div class="sn-name">Security Hub</div><div class="sn-sub">Centralized findings</div></div></div>
+      <div class="shared-node"><span class="sn-ico">📣</span><div><div class="sn-name">SNS</div><div class="sn-sub">Alertas ops · PagerDuty</div></div></div>
+      <div class="shared-node"><span class="sn-ico">🏗️</span><div><div class="sn-name">CodePipeline</div><div class="sn-sub">CI/CD → ECR → ECS</div></div></div>
+    </div>
+
+    <!-- CONNECTIVITY LAYER -->
+    <div class="layer-arr">↓ Transit Gateway → rede Bradesco on-premises</div>
+    <div class="conn-layer">
+      <div class="conn-box" style="border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.04);">
+        <div class="conn-box-title" style="color:var(--warn);">🔗 Transit Gateway</div>
+        <ul>
+          <li>ID: tgw-vaas-sa-east-1</li>
+          <li>3 VPC attachments (uma por AZ)</li>
+          <li>Route table: propagação DX + VPN</li>
+          <li>AS: 64512 (BGP privado)</li>
+        </ul>
+      </div>
+      <div class="conn-box" style="border-color:rgba(255,153,0,.35);background:rgba(255,153,0,.04);">
+        <div class="conn-box-title" style="color:var(--aws);">⚡ Direct Connect · 1Gbps</div>
+        <ul>
+          <li>DX Location: Equinix SP2 (São Paulo)</li>
+          <li>Private VIF → DX Gateway</li>
+          <li>BGP Auth: MD5</li>
+          <li>Latência Axway: &lt;3ms</li>
+        </ul>
+      </div>
+      <div class="conn-box" style="border-color:rgba(78,168,222,.3);background:rgba(78,168,222,.04);">
+        <div class="conn-box-title" style="color:var(--blue);">🔒 VPN Backup (failover)</div>
+        <ul>
+          <li>Site-to-Site VPN · 2 túneis IPSec</li>
+          <li>Failover automático via BGP</li>
+          <li>Ativa quando DX cai</li>
+          <li>Latência: 10-15ms (aceitável)</li>
+        </ul>
+      </div>
+      <div class="conn-box" style="border-color:rgba(204,9,47,.3);background:rgba(204,9,47,.04);">
+        <div class="conn-box-title" style="color:var(--brad);">⚡ Axway · On-premises</div>
+        <ul>
+          <li>lcbr-srv-debito-veiculo</li>
+          <li>/debito/consulta</li>
+          <li>/debito/pagamento</li>
+          <li>/veiculo/lista-positiva</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- /inner -->
+  </div><!-- /canvas -->
+</div>
+
+<!-- ══════════════════════════════════════
+     VPC & REDE
+══════════════════════════════════════ -->
+<div class="sec" id="sec-rede">
+  <div class="sh"><span class="sn">02</span><h2 class="st">VPC &amp; Rede — Detalhamento</h2></div>
+  <p class="ss">Design de rede com 4 camadas de subnet por AZ, isolamento por Security Group e roteamento granular.</p>
+
+  <h3 class="sub">Mapa de subnets</h3>
+  <table class="t">
+    <tr><th>Camada</th><th>AZ-a (sa-east-1a)</th><th>AZ-b (sa-east-1b)</th><th>AZ-c (sa-east-1c)</th><th>Função</th></tr>
+    <tr><td>Public</td><td>10.20.0.0/24</td><td>10.20.1.0/24</td><td>10.20.2.0/24</td><td>ALB nodes · NAT Gateway · Internet Gateway</td></tr>
+    <tr><td>Private Compute</td><td>10.20.10.0/24</td><td>10.20.11.0/24</td><td>10.20.12.0/24</td><td>ECS Fargate tasks · Lambda (rotation)</td></tr>
+    <tr><td>Private Data</td><td>10.20.20.0/24</td><td>10.20.21.0/24</td><td>10.20.22.0/24</td><td>ElastiCache Redis nodes</td></tr>
+    <tr><td>Private Intra</td><td>10.20.30.0/24</td><td>10.20.31.0/24</td><td>10.20.32.0/24</td><td>Transit Gateway attachments · Direct Connect</td></tr>
+  </table>
+
+  <h3 class="sub">Route Tables</h3>
+  <div class="g2">
+    <div class="card">
+      <div class="card-t" style="color:var(--aws);">rt-public (por AZ)</div>
+      <div class="card-b">
+        <code>0.0.0.0/0 → IGW</code><br>
+        <code>10.20.0.0/16 → local</code><br><br>
+        ALB e NAT Gateway precisam de rota para a internet. IGW = Internet Gateway.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--violet);">rt-private-compute (por AZ)</div>
+      <div class="card-b">
+        <code>0.0.0.0/0 → NAT-GW (mesma AZ)</code><br>
+        <code>10.20.0.0/16 → local</code><br>
+        <code>10.30.0.0/16 → TGW</code> (rede Axway)<br><br>
+        Cada AZ roteia para seu próprio NAT Gateway — sem cross-AZ data transfer.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:#fca5a5;">rt-private-data</div>
+      <div class="card-b">
+        <code>10.20.0.0/16 → local</code><br><br>
+        Redis não tem rota para a internet. Sem NAT. Acesso apenas das private-compute subnets via Security Group.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--warn);">rt-private-intra</div>
+      <div class="card-b">
+        <code>10.20.0.0/16 → local</code><br>
+        <code>10.30.0.0/16 → TGW</code><br><br>
+        Transit Gateway attachment subnets — roteamento BGP propagado do DX.
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub">Security Groups — regras mínimas de produção</h3>
+  <table class="t">
+    <tr><th>SG</th><th>Inbound</th><th>Outbound</th></tr>
+    <tr><td>sg-alb</td><td>443/TCP 0.0.0.0/0 (HTTPS público via WAF)<br>80/TCP → redirect para 443</td><td>3000/TCP → sg-ecs (health check + requests)</td></tr>
+    <tr><td>sg-ecs</td><td>3000/TCP ← sg-alb only</td><td>6379/TCP → sg-redis<br>443/TCP → VPC Endpoints (ECR, SM, CW, Bedrock)<br>443/TCP → 10.30.0.0/16 (Axway via TGW)</td></tr>
+    <tr><td>sg-redis</td><td>6379/TCP ← sg-ecs only</td><td>— (sem outbound ativo)</td></tr>
+    <tr><td>sg-vpce</td><td>443/TCP ← sg-ecs</td><td>— (managed by AWS)</td></tr>
+  </table>
+
+  <h3 class="sub">Network ACLs (camada adicional — stateless)</h3>
+  <div class="callout">NACLs como defesa em profundidade sobre os Security Groups. Subnet private-data: bloqueia TODO tráfego de entrada exceto da private-compute. Subnet public: bloqueia portas 22/3389 (SSH/RDP). NACLs são stateless — regras de inbound e outbound precisam ser espelhadas.</div>
+
+  <h3 class="sub">VPC Endpoints — economia de NAT e segurança</h3>
+  <table class="t">
+    <tr><th>Serviço</th><th>Tipo</th><th>Economia</th></tr>
+    <tr><td>S3</td><td>Gateway (gratuito)</td><td>Todo tráfego S3 (KB docs, logs) sem custo de NAT</td></tr>
+    <tr><td>DynamoDB</td><td>Gateway (gratuito)</td><td>Idempotência sem NAT</td></tr>
+    <tr><td>ECR API + DKR</td><td>Interface</td><td>Pull de imagens sem internet · ~$14/mês · alta disponibilidade</td></tr>
+    <tr><td>Secrets Manager</td><td>Interface</td><td>Credenciais Axway sem internet · segurança máxima</td></tr>
+    <tr><td>CloudWatch Logs + Monitoring</td><td>Interface</td><td>Logs e métricas sem NAT</td></tr>
+    <tr><td>X-Ray</td><td>Interface</td><td>Traces sem NAT</td></tr>
+    <tr><td>Bedrock Runtime</td><td>Interface</td><td>Chamadas ao LLM dentro da rede AWS</td></tr>
+    <tr><td>Step Functions</td><td>Interface</td><td>Saga sem internet</td></tr>
+    <tr><td>KMS</td><td>Interface</td><td>Operações de criptografia dentro da VPC</td></tr>
+  </table>
+  <div class="callout ok"><b>Impacto financeiro dos VPC Endpoints:</b> em alta volumetria, o tráfego de ECR pull e CloudWatch Logs geraria ~$200-400/mês de custo de processamento NAT Gateway. Os endpoints eliminam esse custo e reduzem a superfície de exposição à internet.</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     COMPUTE & SCALING
+══════════════════════════════════════ -->
+<div class="sec" id="sec-compute">
+  <div class="sh"><span class="sn">03</span><h2 class="st">Compute &amp; Auto Scaling</h2></div>
+  <p class="ss">ECS Fargate com múltiplas políticas de Auto Scaling para absorver o pico de IPVA (março em SP) sem pré-provisionamento permanente.</p>
+
+  <h3 class="sub">ECS Cluster e Service</h3>
+  <table class="t">
+    <tr><th>Parâmetro</th><th>Valor Produção</th><th>Justificativa</th></tr>
+    <tr><td>Launch type</td><td>FARGATE</td><td>Sem EC2 para gerenciar. Escala por task (não por instância).</td></tr>
+    <tr><td>Task CPU/Mem</td><td>2 vCPU / 4 GB</td><td>Node.js MCP Server com SSE concurrent sessions. 2 vCPU garante headroom para picos de 100ms processing.</td></tr>
+    <tr><td>Desired count</td><td>3 (mínimo)</td><td>1 por AZ sempre ativo. Nunca zero tasks em nenhuma AZ.</td></tr>
+    <tr><td>Min capacity</td><td>3</td><td>Produção nunca desce abaixo de 3 — SLA 99,9%.</td></tr>
+    <tr><td>Max capacity</td><td>20</td><td>500 TPS / ~25 req/task = 20 tasks para pico absoluto.</td></tr>
+    <tr><td>Deployment max</td><td>200%</td><td>Nova task sobe antes da antiga descer — zero downtime.</td></tr>
+    <tr><td>Deployment min healthy</td><td>100%</td><td>Nunca reduz capacidade durante deploy.</td></tr>
+    <tr><td>Health check grace</td><td>60s</td><td>Node.js demora ~15s para warm up. Grace period evita falso negativo.</td></tr>
+    <tr><td>Container stop timeout</td><td>120s</td><td>Aguarda SSE connections existentes fecharem antes de matar o container.</td></tr>
+  </table>
+
+  <h3 class="sub">Auto Scaling — múltiplas dimensões</h3>
+  <pre class="code"><span class="cm"># Política 1: Target Tracking — CPU (reativa, mais rápida)</span>
+target_cpu_utilization  = <span class="ok">70</span>     <span class="cm">// %</span>
+scale_out_cooldown      = <span class="ok">60</span>     <span class="cm">// segundos — scale-out rápido</span>
+scale_in_cooldown       = <span class="ok">300</span>    <span class="cm">// segundos — scale-in conservador</span>
+
+<span class="cm"># Política 2: Target Tracking — ALB Request Count per Target</span>
+requests_per_target     = <span class="ok">200</span>    <span class="cm">// cada task aguenta 200 req/min confortavelmente</span>
+
+<span class="cm"># Política 3: Scheduled Scaling — pico de IPVA em março/SP</span>
+schedule_peak_start   = <span class="str">"cron(0 7 1-31 3 ? *)"</span>   <span class="cm">// 7h todo dia de março</span>
+desired_during_peak   = <span class="ok">10</span>     <span class="cm">// pré-provisiona antes do pico matinal</span>
+schedule_peak_end     = <span class="str">"cron(0 22 1-31 3 ? *)"</span>  <span class="cm">// 22h — volta ao normal</span>
+desired_after_peak    = <span class="ok">3</span>
+
+<span class="cm"># Política 4: Step Scaling — spike súbito (sem aviso)</span>
+<span class="cm"># Se CPU > 85% por 2 minutos consecutivos: +4 tasks (além do target tracking)</span></pre>
+
+  <h3 class="sub">Task Definition — Produção</h3>
+  <pre class="code"><span class="cm"># vaas-tributos-mcp-task-definition</span>
+cpu:            <span class="str">"2048"</span>      <span class="cm">// 2 vCPU</span>
+memory:         <span class="str">"4096"</span>      <span class="cm">// 4GB</span>
+network_mode:   <span class="str">"awsvpc"</span>    <span class="cm">// IP privado por task — isolamento de rede</span>
+
+environment:
+  NODE_ENV:          <span class="str">"production"</span>
+  PORT:              <span class="str">"3000"</span>
+  AWS_REGION:        <span class="str">"sa-east-1"</span>
+  REDIS_CLUSTER:     <span class="str">"true"</span>           <span class="cm">// cluster mode = conexão diferente</span>
+  MAX_CONNECTIONS:   <span class="str">"500"</span>           <span class="cm">// SSE concurrent sessions por task</span>
+  LOG_LEVEL:         <span class="str">"info"</span>
+
+secrets: <span class="cm">// do Secrets Manager — nunca em env direto</span>
+  AXWAY_CLIENT_ID
+  AXWAY_CLIENT_SECRET
+  REDIS_AUTH_TOKEN
+  CIAM_JWKS_URL
+
+healthCheck:
+  command:  <span class="str">"wget -qO- http://localhost:3000/health || exit 1"</span>
+  interval: <span class="ok">10</span>  timeout: <span class="ok">3</span>  retries: <span class="ok">3</span>  startPeriod: <span class="ok">30</span>
+
+logConfiguration:
+  driver:  awslogs
+  options:
+    awslogs-group:          <span class="str">"/ecs/vaas-tributos-mcp"</span>
+    awslogs-stream-prefix:  <span class="str">"ecs"</span>
+    awslogs-region:         <span class="str">"sa-east-1"</span></pre>
+
+  <h3 class="sub">Application Load Balancer — configuração de produção</h3>
+  <table class="t">
+    <tr><th>Parâmetro</th><th>Valor</th></tr>
+    <tr><td>Tipo</td><td>Internet-facing · ipv4</td></tr>
+    <tr><td>AZs</td><td>sa-east-1a, sa-east-1b, sa-east-1c (todas as 3)</td></tr>
+    <tr><td>Listener</td><td>HTTPS:443 · TLS Policy: ELBSecurityPolicy-TLS13-1-2-2021-06</td></tr>
+    <tr><td>Certificado</td><td>ACM · mcp.bradesco.com.br · renovação automática</td></tr>
+    <tr><td>Idle timeout</td><td>300s (SSE de raciocínio longo do agente)</td></tr>
+    <tr><td>Cross-zone LB</td><td>Habilitado — distribui tráfego entre tasks de qualquer AZ</td></tr>
+    <tr><td>Access logs</td><td>S3 · s3://vaas-alb-logs/ · retenção 90 dias</td></tr>
+    <tr><td>Deletion protection</td><td>true — não deletar acidentalmente</td></tr>
+    <tr><td>HTTP/2</td><td>Habilitado — multiplexing reduz overhead de conexão</td></tr>
+    <tr><td>Target Group health check</td><td>GET /health · 200 · interval 10s · threshold 2</td></tr>
+    <tr><td>Deregistration delay</td><td>120s — aguarda SSE connections draining</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════
+     DATA LAYER
+══════════════════════════════════════ -->
+<div class="sec" id="sec-data">
+  <div class="sh"><span class="sn">04</span><h2 class="st">Data Layer — Redis Cluster &amp; DynamoDB</h2></div>
+  <p class="ss">Alta volumetria exige Redis Cluster Mode (sharding + replicação) em vez de apenas réplicas. DynamoDB On-Demand absorve qualquer pico sem provisionamento.</p>
+
+  <h3 class="sub">ElastiCache Redis — Cluster Mode Enabled</h3>
+  <div class="callout risk"><b>Por que Cluster Mode?</b> Redis com apenas réplicas (Cluster Mode disabled) tem um único primary node como gargalo de escrita. Com 500 TPS e sessões de usuário sendo gravadas a cada requisição, um único primary fica saturado. Cluster Mode distribui os writes em 3 shards — cada shard tem sua própria primary.</div>
+
+  <table class="t">
+    <tr><th>Parâmetro</th><th>Valor</th><th>Motivo</th></tr>
+    <tr><td>Cluster Mode</td><td>Enabled</td><td>Sharding horizontal — distribui writes</td></tr>
+    <tr><td>Shards</td><td>3</td><td>~33% da carga em cada shard</td></tr>
+    <tr><td>Réplicas por shard</td><td>2</td><td>1 replica por AZ restante — total 9 nodes</td></tr>
+    <tr><td>Node type</td><td>cache.r7g.large</td><td>6.38GB RAM · Graviton3 · baixa latência</td></tr>
+    <tr><td>Total RAM</td><td>~57GB</td><td>9 nodes × 6.38GB — suficiente para milhões de sessões</td></tr>
+    <tr><td>Automatic failover</td><td>true</td><td>Failover automático em &lt;60s se primary falhar</td></tr>
+    <tr><td>Multi-AZ</td><td>true</td><td>Primary e replicas em AZs diferentes</td></tr>
+    <tr><td>Encryption at rest</td><td>KMS CMK vaas-tributos-cmk</td><td>Tokens de sessão cifrados</td></tr>
+    <tr><td>Encryption in transit</td><td>TLS 1.2+</td><td>Comunicação ECS → Redis cifrada</td></tr>
+    <tr><td>AUTH token</td><td>Secrets Manager</td><td>Password obrigatória — sem acesso anônimo</td></tr>
+    <tr><td>TTL sessão</td><td>1800s (30 min idle)</td><td>Expiração automática de sessões inativas</td></tr>
+    <tr><td>Backup</td><td>Diário → S3 · retenção 7 dias</td><td>Recuperação de dados de sessão se necessário</td></tr>
+    <tr><td>Maintenance window</td><td>sun:02:00-sun:04:00 UTC-3</td><td>Domingo de madrugada — menor volume</td></tr>
+  </table>
+
+  <h3 class="sub">DynamoDB — Idempotência da Saga</h3>
+  <table class="t">
+    <tr><th>Parâmetro</th><th>Valor</th></tr>
+    <tr><td>Tabela</td><td>vaas-tributos-idempotency</td></tr>
+    <tr><td>Billing</td><td>On-Demand (PAY_PER_REQUEST) — absorve qualquer pico sem over-provision</td></tr>
+    <tr><td>PK</td><td>sagaId+tipoDebito+nomeServico (string) — chave composta deterministíca</td></tr>
+    <tr><td>TTL attribute</td><td>expires_at — registros expiram após 24h automaticamente</td></tr>
+    <tr><td>PITR</td><td>Habilitado — point-in-time recovery 35 dias</td></tr>
+    <tr><td>Encryption</td><td>KMS CMK — dados de pagamento cifrados</td></tr>
+    <tr><td>Streams</td><td>Habilitado — evento de pagamento para auditoria em tempo real</td></tr>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════
+     CONECTIVIDADE
+══════════════════════════════════════ -->
+<div class="sec" id="sec-connect">
+  <div class="sh"><span class="sn">05</span><h2 class="st">Conectividade — Direct Connect &amp; Transit Gateway</h2></div>
+  <p class="ss">Tráfego bancário para o Axway nunca passa pela internet. Direct Connect 1Gbps como caminho primário, VPN como failover automático.</p>
+
+  <h3 class="sub">AWS Direct Connect</h3>
+  <table class="t">
+    <tr><th>Parâmetro</th><th>Valor</th></tr>
+    <tr><td>Capacidade</td><td>1Gbps Hosted Connection (via parceiro DX em SP)</td></tr>
+    <tr><td>Localização</td><td>Equinix SP2 (São Paulo) — maior concentração de DX no Brasil</td></tr>
+    <tr><td>Tipo</td><td>Private VIF → DX Gateway → Transit Gateway</td></tr>
+    <tr><td>BGP ASN AWS</td><td>64512 (privado)</td></tr>
+    <tr><td>BGP ASN Bradesco</td><td>ASN do datacenter Bradesco (confirmar com time de rede)</td></tr>
+    <tr><td>BGP Auth</td><td>MD5 password (Secrets Manager)</td></tr>
+    <tr><td>Latência estimada</td><td>&lt;3ms entre ECS e Axway</td></tr>
+    <tr><td>Resiliência</td><td>2 conexões físicas redundantes no mesmo DX Location</td></tr>
+  </table>
+
+  <h3 class="sub">Transit Gateway</h3>
+  <pre class="code"><span class="cm"># Transit Gateway — hub central de roteamento</span>
+resource <span class="str">"aws_ec2_transit_gateway"</span> <span class="str">"vaas_tgw"</span> {
+  description     = <span class="str">"VaaS Transit Gateway · sa-east-1"</span>
+  amazon_side_asn = <span class="ok">64512</span>
+  
+  default_route_table_association = <span class="str">"disable"</span>
+  default_route_table_propagation = <span class="str">"disable"</span>
+  
+  <span class="cm"># VPC attachment — uma por AZ (subnet intra-*)</span>
+  <span class="cm"># DX Gateway attachment</span>
+  <span class="cm"># VPN attachment (backup)</span>
+}
+
+<span class="cm"># Route Table DX → VPC</span>
+10.20.0.0/16 → vpc-attachment (destino: VaaS VPC)
+
+<span class="cm"># Route Table VPC → Axway</span>
+10.30.0.0/16 → dx-attachment (destino: rede Bradesco via DX)
+0.0.0.0/0   → dx-attachment (fallback para VPN se DX cair)</pre>
+
+  <h3 class="sub">Failover VPN — automático via BGP</h3>
+  <div class="callout warn"><b>Failover transparente:</b> quando o Direct Connect cai, o BGP retira as rotas do DX do Transit Gateway e as rotas da VPN (com metric maior) entram automaticamente. A aplicação não sabe que houve failover — apenas a latência sobe de &lt;3ms para 10-15ms. Dentro do SLA de p99 &lt; 4s da jornada completa.</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     SEGURANÇA
+══════════════════════════════════════ -->
+<div class="sec" id="sec-seguranca">
+  <div class="sh"><span class="sn">06</span><h2 class="st">Segurança — Defesa em Profundidade</h2></div>
+  <p class="ss">5 camadas de defesa independentes — falha de uma não compromete as outras.</p>
+
+  <div class="g2">
+    <div class="card">
+      <div class="card-t" style="color:var(--risk);">Camada 1 · WAF v2</div>
+      <div class="card-b">
+        <b>Rate limiting:</b> 500 req/min por IP<br>
+        <b>Geo-blocking:</b> apenas Brasil (CC = BR)<br>
+        <b>AWS Managed Rules:</b> AWSManagedRulesCommonRuleSet + SQLi<br>
+        <b>Custom rule:</b> bloqueia enumeração de placas (pattern /^[A-Z]{3}[\d]{4}$/ em volume)<br>
+        <b>Logging:</b> todos os requests → CloudWatch → Athena
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--aws);">Camada 2 · ALB + ACM</div>
+      <div class="card-b">
+        <b>TLS Policy:</b> ELBSecurityPolicy-TLS13-1-2-2021-06<br>
+        <b>Mínimo:</b> TLS 1.2 (elimina TLS 1.0/1.1 e SSLv3)<br>
+        <b>Certificado:</b> ACM · renovação automática 60 dias antes<br>
+        <b>HTTP → HTTPS:</b> redirect obrigatório no listener :80<br>
+        <b>Security headers:</b> HSTS, X-Frame-Options via Lambda@Edge
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--ok);">Camada 3 · IAM Least Privilege</div>
+      <div class="card-b">
+        <b>Task Role ECS:</b> só o necessário:<br>
+        • <code>secretsmanager:GetSecretValue</code> → 4 secrets específicos<br>
+        • <code>cloudwatch:PutMetricData</code> → namespace VaaS/*<br>
+        • <code>xray:PutTraceSegments</code><br>
+        • <code>dynamodb:PutItem|GetItem</code> → tabela específica<br>
+        • <code>kms:Decrypt</code> → CMK específico<br>
+        <b>Zero wildcards.</b> Zero AdministratorAccess.
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--violet);">Camada 4 · KMS CMK Dedicado</div>
+      <div class="card-b">
+        <b>CMK:</b> vaas-tributos-cmk (não compartilhado)<br>
+        <b>Rotação:</b> automática anual<br>
+        <b>Key policy:</b> só Task Role ECS + time de segurança<br>
+        <b>Protege:</b> Redis at-rest, DynamoDB, Secrets Manager, CloudTrail logs, S3<br>
+        <b>CloudTrail:</b> toda operação KMS auditada
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--warn);">Camada 5 · CloudTrail + VPC Flow Logs</div>
+      <div class="card-b">
+        <b>CloudTrail:</b> multi-region, S3 com Object Lock 365 dias (imutável)<br>
+        <b>VPC Flow Logs:</b> all traffic (ACCEPT + REJECT) → S3 → Athena<br>
+        <b>CloudTrail Insights:</b> detecta anomalias de API<br>
+        <b>Config Rules:</b> verifica conformidade contínua (MFA, public S3, SG rules)<br>
+        <b>BACEN 4.658:</b> todos os itens Art. 5º atendidos
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t" style="color:var(--blue);">Secrets Manager · Rotação</div>
+      <div class="card-b">
+        <b>Secrets:</b> axway-client-id, axway-client-secret, redis-auth-token, ciam-jwks-url<br>
+        <b>Rotação:</b> Lambda automática a cada 30 dias<br>
+        <b>Zero downtime:</b> Lambda atualiza o secret e notifica ECS para recarregar<br>
+        <b>KMS:</b> cada secret cifrado com CMK dedicado<br>
+        <b>Audit:</b> todo acesso logado no CloudTrail
+      </div>
+    </div>
+  </div>
+
+  <h3 class="sub">Step-Up Authentication — pagamentos</h3>
+  <div class="callout risk"><b>Obrigatório antes de produção:</b> toda chamada a <code>/debito/pagamento</code> requer confirmação biométrica no app Bradesco via push notification (FCM/APNs). O MCP Server não executa o POST no Axway sem receber o callback de confirmação. Ladrão com celular furtado não passa pela biometria do titular. Spec detalhada no documento de Segurança de Sessão.</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     OBSERVABILIDADE
+══════════════════════════════════════ -->
+<div class="sec" id="sec-obs">
+  <div class="sh"><span class="sn">07</span><h2 class="st">Observabilidade — Três Pilares</h2></div>
+
+  <h3 class="sub">CloudWatch — métricas de negócio e técnicas</h3>
+  <table class="t">
+    <tr><th>Métrica</th><th>Namespace</th><th>Alarme</th></tr>
+    <tr><td>vaas.mcp.latency.p99</td><td>VaaS/Tributos</td><td>&gt;4000ms por 5 min → PagerDuty P2</td></tr>
+    <tr><td>vaas.mcp.error.rate</td><td>VaaS/Tributos</td><td>&gt;2% por 5 min → PagerDuty P1</td></tr>
+    <tr><td>vaas.pagamento.saga.failed</td><td>VaaS/Tributos</td><td>Qualquer falha → SNS + Slack imediato</td></tr>
+    <tr><td>vaas.axway.circuit.open</td><td>VaaS/Tributos</td><td>Qualquer circuit OPEN → PagerDuty P1</td></tr>
+    <tr><td>redis.cpu.utilization</td><td>AWS/ElastiCache</td><td>&gt;70% → escalar para r7g.xlarge</td></tr>
+    <tr><td>redis.connections</td><td>AWS/ElastiCache</td><td>&gt;50K connections → investigar</td></tr>
+    <tr><td>ecs.cpu.utilization</td><td>AWS/ECS</td><td>&gt;80% média → acionar Auto Scaling</td></tr>
+    <tr><td>alb.active_connections</td><td>AWS/ApplicationELB</td><td>&gt;10K → monitorar scaling</td></tr>
+    <tr><td>vaas.kb.rag.latency</td><td>VaaS/Tributos</td><td>&gt;500ms → KB degradado</td></tr>
+    <tr><td>vaas.stepfn.execution.failed</td><td>VaaS/Tributos</td><td>Qualquer falha Step Functions</td></tr>
+  </table>
+
+  <h3 class="sub">X-Ray — Trace distribuído</h3>
+  <div class="callout violet"><b>Trace end-to-end:</b> cada requisição do app Bradesco gera um trace ID que percorre: ALB → ECS (MCP Server) → Bedrock (KB lookup) → DynamoDB (idempotência) → Axway (via VPN). No X-Ray Service Map, é possível ver exatamente onde está a latência em qualquer step da jornada. O correlationId (sagaId) é injetado no trace para cruzar com os logs do Axway.</div>
+
+  <h3 class="sub">Dashboard CloudWatch — jornada de tributos</h3>
+  <div class="g2">
+    <div class="card">
+      <div class="card-t">Widgets de Negócio</div>
+      <div class="card-b">
+        Pagamentos bem-sucedidos/hora<br>
+        Valor total pago em tempo real (R$)<br>
+        Distribuição por tipo de débito (IPVA vs Licenciamento vs Taxas)<br>
+        Sagas concluídas vs. falhas<br>
+        Top 5 erros do Axway por nomeServico
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-t">Widgets Técnicos</div>
+      <div class="card-b">
+        Latência p50/p90/p99 (gráfico de linha)<br>
+        ECS tasks count (escala automática visível)<br>
+        Redis connections por shard<br>
+        ALB Active Connections<br>
+        Circuit breaker status por API
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     DR & BACKUP
+══════════════════════════════════════ -->
+<div class="sec" id="sec-dr">
+  <div class="sh"><span class="sn">08</span><h2 class="st">Disaster Recovery &amp; Backup</h2></div>
+  <p class="ss">Objetivos: RPO &lt; 30 minutos (máximo de dados perdidos), RTO &lt; 1 hora (tempo para restaurar o serviço).</p>
+
+  <table class="t">
+    <tr><th>Componente</th><th>Estratégia</th><th>RPO</th><th>RTO</th></tr>
+    <tr><td>ECS Tasks</td><td>Multi-AZ nativamente — falha de AZ substituída em &lt;3min pelo Auto Scaling</td><td>0</td><td>&lt;3min</td></tr>
+    <tr><td>ALB</td><td>Multi-AZ nativo — sem ponto único de falha</td><td>0</td><td>0</td></tr>
+    <tr><td>Redis Cluster</td><td>Automatic failover por shard — replica promovida a primary em &lt;60s</td><td>&lt;60s</td><td>&lt;2min</td></tr>
+    <tr><td>DynamoDB</td><td>Gerenciado pela AWS — 99.999% SLA regional. PITR ativo.</td><td>&lt;5s (PITR)</td><td>&lt;1min</td></tr>
+    <tr><td>Secrets Manager</td><td>Gerenciado pela AWS — replicado internamente</td><td>0</td><td>&lt;1min</td></tr>
+    <tr><td>ECR</td><td>Imagens imutáveis + versioning. Rebuild em 5min no CodePipeline.</td><td>0 (imagens)</td><td>&lt;10min</td></tr>
+    <tr><td>Knowledge Base S3</td><td>Cross-region replication → us-east-1 (bucket de backup)</td><td>&lt;15min</td><td>&lt;30min</td></tr>
+    <tr><td>Falha de AZ completa</td><td>ECS + Redis failover automático para as 2 AZs restantes. Capacidade reduzida mas funcional.</td><td>0</td><td>&lt;5min</td></tr>
+    <tr><td>Falha de região</td><td>Fora do escopo atual. Requer segunda região (sa-east-1 tem apenas 3 AZs).</td><td>N/A</td><td>N/A</td></tr>
+  </table>
+
+  <h3 class="sub">AWS Backup — plano automatizado</h3>
+  <pre class="code"><span class="cm"># Plano de backup VaaS Tributos</span>
+<span class="cm"># DynamoDB</span>
+backup_frequency:  daily at 02:00 UTC-3
+retention:         35 days
+transition_to_cold: 7 days (Glacier Instant)
+
+<span class="cm"># ElastiCache Redis</span>
+snapshot_window:   02:00-03:00 UTC-3 (madrugada)
+retention:         7 snapshots
+restore_time_est:  &lt;15 min (snapshot → cluster)
+
+<span class="cm"># S3 Knowledge Base</span>
+versioning:        enabled (todas as versões mantidas)
+replication:       cross-region → us-east-1
+lifecycle:         objetos &gt;90d → Glacier</pre>
+</div>
+
+<!-- ══════════════════════════════════════
+     CUSTO
+══════════════════════════════════════ -->
+<div class="sec" id="sec-custo">
+  <div class="sh"><span class="sn">09</span><h2 class="st">Custo Estimado — Produção · sa-east-1</h2></div>
+  <p class="ss">Estimativa mensal para volumetria normal (baseline) vs. pico de IPVA (março). Câmbio referência: R$5,80/USD.</p>
+
+  <table class="t">
+    <tr><th>Serviço</th><th>Config</th><th>Baseline/mês</th><th>Pico IPVA/mês</th></tr>
+    <tr><td>ECS Fargate</td><td>3 tasks baseline / 10 tasks pico · 2vCPU/4GB</td><td>~$180</td><td>~$450</td></tr>
+    <tr><td>ALB</td><td>Multi-AZ · ~10 LCU baseline · ~50 LCU pico</td><td>~$30</td><td>~$90</td></tr>
+    <tr><td>ElastiCache Redis</td><td>9x cache.r7g.large · Cluster Mode</td><td>~$580</td><td>~$580</td></tr>
+    <tr><td>DynamoDB</td><td>On-Demand · ~1M writes/mês baseline</td><td>~$15</td><td>~$60</td></tr>
+    <tr><td>NAT Gateway</td><td>3x NAT GW + data transfer · VPC Endpoints reduzem</td><td>~$120</td><td>~$200</td></tr>
+    <tr><td>Direct Connect</td><td>1Gbps Hosted Connection + Port charges</td><td>~$400</td><td>~$400</td></tr>
+    <tr><td>VPN Backup</td><td>2 túneis · standby</td><td>~$72</td><td>~$72</td></tr>
+    <tr><td>Transit Gateway</td><td>1 TGW + attachments + data processing</td><td>~$50</td><td>~$80</td></tr>
+    <tr><td>Bedrock (Claude Sonnet)</td><td>~500K tokens input + 100K output · baseline</td><td>~$120</td><td>~$400</td></tr>
+    <tr><td>OpenSearch Serverless</td><td>2 OCU search + 2 OCU indexing</td><td>~$175</td><td>~$175</td></tr>
+    <tr><td>S3</td><td>KB docs + logs + backups (~50GB)</td><td>~$5</td><td>~$8</td></tr>
+    <tr><td>CloudWatch + X-Ray</td><td>Logs 20GB/mês · métricas customizadas · traces</td><td>~$45</td><td>~$90</td></tr>
+    <tr><td>WAF v2</td><td>1 WebACL + rules + ~5M requests</td><td>~$25</td><td>~$60</td></tr>
+    <tr><td>Secrets Manager</td><td>5 secrets · rotation Lambdas</td><td>~$3</td><td>~$3</td></tr>
+    <tr><td>ECR + CodePipeline</td><td>Storage + builds</td><td>~$15</td><td>~$15</td></tr>
+    <tr><td>Route 53</td><td>1 hosted zone + health checks</td><td>~$5</td><td>~$5</td></tr>
+    <tr><td><b>TOTAL</b></td><td></td><td><b>~$1.840/mês</b><br>~R$10.672</td><td><b>~$2.688/mês</b><br>~R$15.590</td></tr>
+  </table>
+
+  <div class="callout ok"><b>Maior custo:</b> Redis Cluster (31% do baseline). Justificado pela exigência de alta disponibilidade e throughput. O Direct Connect (22%) garante latência previsível e segurança para tráfego bancário — comparado a ~$72/mês do VPN, o DX adiciona ~$328/mês mas elimina o risco de latência variável da internet para pagamentos. O pico de março (~R$15,5K) dura apenas 1 mês — o restante do ano fica no baseline.</div>
+</div>
+
+</div><!-- /main -->
+<div class="footer">Bradesco · Open Platform · VaaS Tributos · Arquitetura AWS · Produção · sa-east-1 · Julho/2026</div>
+
+<script>
+function show(id,btn){
+  document.querySelectorAll('.sec').forEach(function(s){s.classList.remove('a');});
+  document.querySelectorAll('.nt').forEach(function(b){b.classList.remove('a');});
+  document.getElementById('sec-'+id).classList.add('a');
+  btn.classList.add('a');
+}
+</script>
+</body>
+</html>

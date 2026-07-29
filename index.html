@@ -131,8 +131,9 @@ a{text-decoration:none;color:inherit;}
 .section-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:12px;}
 .section-label::after{content:'';flex:1;height:1px;background:var(--b1);}
 
-.cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:52px;}
-@media(max-width:760px){.cards{grid-template-columns:1fr;}}
+.cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:52px;}
+@media(max-width:1020px){.cards{grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){.cards{grid-template-columns:1fr;}}
 
 .doc-card{background:var(--s1);border:1.5px solid var(--b1);border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px;transition:all .2s;cursor:pointer;position:relative;overflow:hidden;}
 .doc-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(204,9,47,.04) 0%,transparent 60%);opacity:0;transition:opacity .2s;}
@@ -198,8 +199,9 @@ a{text-decoration:none;color:inherit;}
 <div class="stats">
   <div class="stat"><div class="stat-n" style="color:var(--brad)">20+</div><div class="stat-l">Endpoints mapeados<br>lcbr-srv-debito-veiculo</div></div>
   <div class="stat"><div class="stat-n" style="color:var(--ok)">3</div><div class="stat-l">Modos de demonstração<br>MVP · Produção · Backlog</div></div>
-  <div class="stat"><div class="stat-n" style="color:#9b87f5)">27</div><div class="stat-l">UFs no roadmap<br>(1 no MVP · 26 na Fase 2)</div></div>
+  <div class="stat"><div class="stat-n" style="color:#9b87f5">3</div><div class="stat-l">AZs · sa-east-1<br>500 TPS no pico IPVA</div></div>
   <div class="stat"><div class="stat-n" style="color:var(--warn)">34%</div><div class="stat-l">Completude atual<br>rumo à visão completa</div></div>
+  <div class="stat"><div class="stat-n" style="color:#ff9900">3</div><div class="stat-l">Materiais nesta sessão<br>Demo · Gaps · Arquitetura</div></div>
 </div>
 
 <div class="content">
@@ -210,7 +212,7 @@ a{text-decoration:none;color:inherit;}
       <div class="cs-title">Contexto desta apresentação</div>
       <div class="cs-text">
         O VaaS nasceu como uma tese de Full Commerce veicular. Nesta versão, focamos no <strong>ganho imediato de maior impacto</strong> — pagamento de tributos de forma conversacional dentro do próprio app Bradesco, sem redirecionar o cliente para outros canais.<br><br>
-        Os materiais abaixo cobrem a demonstração interativa (com emulador do app + arquitetura AWS em tempo real) e o mapeamento completo de gaps para atingir a produção plena.
+        Os materiais abaixo cobrem a demonstração interativa, o mapeamento completo de gaps para produção plena e a <strong>arquitetura AWS de referência</strong> — Multi-AZ, alta volumetria, Direct Connect e todos os aspectos de rede para o cenário bancário.
       </div>
     </div>
   </div>
@@ -257,6 +259,25 @@ a{text-decoration:none;color:inherit;}
       </div>
     </a>
 
+    <a class="doc-card" href="vaas-aws-arch-producao.html">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:2px;">
+        <div class="dc-num" style="background:#ff9900;color:#000;">03</div>
+        <span class="dc-tag" style="background:rgba(255,153,0,.12);color:#ff9900;">Arquitetura AWS · Produção</span>
+      </div>
+      <div class="dc-title">AWS · Multi-AZ · sa-east-1<br>Alta Volumetria</div>
+      <div class="dc-desc">Arquitetura de referência para produção com <b>500 TPS</b> no pico de IPVA — Multi-AZ, VPC com 4 camadas de subnet, Redis Cluster Mode (9 nodes), ECS Auto Scaling 3→20, Direct Connect 1Gbps para o Axway.</div>
+      <div class="dc-bullets">
+        <div class="dc-bullet">VPC 10.20.0.0/16 · 12 subnets · 3 AZs (sa-east-1a/b/c) · NAT Gateway por AZ</div>
+        <div class="dc-bullet">ALB + WAF v2 + Route 53 · TLS 1.3 · 11 VPC Endpoints (PrivateLink)</div>
+        <div class="dc-bullet">Redis Cluster 3 shards × 3 nodes · DynamoDB On-Demand · Step Functions Express</div>
+        <div class="dc-bullet">Direct Connect 1Gbps + VPN failover · Transit Gateway · DR RPO &lt;30min</div>
+      </div>
+      <div class="dc-cta">
+        <span class="dc-cta-text">vaas-aws-arch-producao.html</span>
+        <span class="dc-cta-arrow">Ver arquitetura →</span>
+      </div>
+    </a>
+
   </div>
 
   <div class="context-strip" style="border-color:rgba(45,212,168,.2);background:rgba(45,212,168,.04);">
@@ -264,8 +285,9 @@ a{text-decoration:none;color:inherit;}
     <div class="cs-body">
       <div class="cs-title">Como usar na reunião</div>
       <div class="cs-text">
-        <strong>Demo (material 01)</strong> — comece pelo botão <strong>▶ Play</strong> para rodar o fluxo automaticamente, ou use <strong>Próximo ▶</strong> para avançar passo a passo durante a apresentação. Alterne entre MVP e Produção para mostrar a diferença de escopo. Clique no botão <em>Débitos de Veículo</em> no app para iniciar manualmente.<br><br>
-        <strong>Gap Analysis (material 02)</strong> — use a seção <strong>Roadmap</strong> para posicionar o que está pronto vs. o que vem nas próximas fases. A seção <strong>Cobertura UFs</strong> é o argumento visual mais forte para justificar a expansão multi-estado.
+        <strong>Demo (material 01)</strong> — comece pelo botão <strong>▶ Play</strong> para rodar o fluxo automaticamente, ou use <strong>Próximo ▶</strong> para avançar passo a passo. Alterne entre MVP e Produção para mostrar a diferença de escopo.<br><br>
+        <strong>Gap Analysis (material 02)</strong> — use a seção <strong>Roadmap</strong> para posicionar o que está pronto vs. o que vem nas próximas fases. A seção <strong>Cobertura UFs</strong> é o argumento mais forte para justificar a expansão multi-estado.<br><br>
+        <strong>Arquitetura AWS (material 03)</strong> — comece pelo <strong>Diagrama</strong> (visão física da VPC com subnets e AZs), depois vá para <strong>Compute &amp; Scaling</strong> para mostrar as 4 políticas de Auto Scaling. A aba <strong>Custo</strong> tem os números de R$10.672/mês baseline vs. R$15.590/mês no pico de março.
       </div>
     </div>
   </div>
